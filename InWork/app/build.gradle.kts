@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.inwork"
+    namespace = "com.example.splashscreen"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.inwork"
+        applicationId = "com.example.splashscreen"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -56,4 +56,38 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    val lottieVersion = "6.3.0" // Replace with the latest stable version
+    implementation("com.airbnb.android:lottie-compose:$lottieVersion")
+
+    val nav_version = "2.9.3"
+
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+
+
+    // Standard Android dependencies
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+    implementation("androidx.activity:activity-compose:1.9.0")
+
+    // Compose Bill of Materials (BOM) - Manages versions for other Compose libraries
+    // Make sure to use the latest stable version
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+
+    // Core Compose UI libraries (included by the BOM)
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+
+    // Material Design 3 components (Buttons, Cards, TextFields, etc.)
+    implementation("androidx.compose.material3:material3")
+
+    // Icons library (for the password visibility icon)
+    implementation("androidx.compose.material:material-icons-extended")
+
+
+    // Android Studio tooling support (for previews and inspection)
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+
