@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.splashscreen"
+    namespace = "com.example.inwork"
     compileSdk = 36
 
     defaultConfig {

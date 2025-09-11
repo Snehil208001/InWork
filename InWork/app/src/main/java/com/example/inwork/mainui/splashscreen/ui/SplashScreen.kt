@@ -31,7 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.splashscreen.R.drawable.logopreview
+import com.example.inwork.R
+import com.example.inwork.core.navigation.Routes // Import your Routes object
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -42,6 +43,7 @@ fun SplashScreen(navController: NavController) {
     val rotation = remember { Animatable(0f) }     // Rotation
 
     LaunchedEffect(true) {
+        // This coroutineScope waits for all animations inside to complete
         coroutineScope {
             // Y drop - with smooth easing
             launch {
@@ -49,9 +51,9 @@ fun SplashScreen(navController: NavController) {
                     targetValue = 0f,
                     animationSpec = keyframes {
                         durationMillis = 1500
-                        -400f at 0 using FastOutSlowInEasing     // start high with smooth easing
-                        80f at 700 using FastOutSlowInEasing     // reduced overshoot with smooth easing
-                        0f at 1200 using FastOutSlowInEasing     // final position with smooth easing
+                        -400f at 0 using FastOutSlowInEasing
+                        80f at 700 using FastOutSlowInEasing
+                        0f at 1200 using FastOutSlowInEasing
                     }
                 )
             }
@@ -62,10 +64,10 @@ fun SplashScreen(navController: NavController) {
                     targetValue = 0f,
                     animationSpec = keyframes {
                         durationMillis = 1500
-                        0f at 0 using FastOutSlowInEasing         // start center with smooth easing
-                        90f at 300 using FastOutSlowInEasing     // early peak with smooth easing
-                        80f at 500 using FastOutSlowInEasing      // hold at peak with smooth easing
-                        0f at 1200 using FastOutSlowInEasing      // return to center with smooth easing
+                        0f at 0 using FastOutSlowInEasing
+                        90f at 300 using FastOutSlowInEasing
+                        80f at 500 using FastOutSlowInEasing
+                        0f at 1200 using FastOutSlowInEasing
                     }
                 )
             }
@@ -79,17 +81,15 @@ fun SplashScreen(navController: NavController) {
             }
         }
 
-        // In a real app, navigation happens after the animation.
-        // For preview purposes, we can comment this out or handle it gracefully.
-        // In a live run, this will navigate.
-        if (navController.currentBackStackEntry?.destination?.route != "Splash") {
-            navController.navigate("login") {
-                popUpTo("Splash") { inclusive = true }
-            }
+        // --- FIXED NAVIGATION ---
+        // Navigate to the correct route after animations are done
+        navController.navigate(Routes.onboarding) {
+            // Remove the SplashScreen from the back stack so the user can't go back to it
+            popUpTo(Routes.splash) { inclusive = true }
         }
     }
 
-    // --- UI Layout ---
+    // --- UI Layout (No changes here) ---
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -100,9 +100,8 @@ fun SplashScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo dropping with curve
             Image(
-                painter = painterResource(id = logopreview),
+                painter = painterResource(id = R.drawable.logopreview),
                 contentDescription = "App Logo",
                 modifier = Modifier
                     .size(200.dp)
@@ -127,10 +126,8 @@ fun SplashScreen(navController: NavController) {
     }
 }
 
-// --- PREVIEW ---
 @Preview(showBackground = true)
 @Composable
 fun SplashScreenPreview() {
-    // We use rememberNavController() for the preview, as it doesn't have a real navigation graph.
     SplashScreen(navController = rememberNavController())
 }
