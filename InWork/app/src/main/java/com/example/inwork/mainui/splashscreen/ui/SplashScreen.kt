@@ -1,5 +1,7 @@
 package com.example.inwork.mainui.splashscreen.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.keyframes
@@ -24,11 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.inwork.R
@@ -41,6 +45,7 @@ fun SplashScreen(navController: NavController) {
     val offsetY = remember { Animatable(-400f) }   // Start high
     val offsetX = remember { Animatable(0f) }      // Start center
     val rotation = remember { Animatable(0f) }     // Rotation
+    val context = LocalContext.current
 
     LaunchedEffect(true) {
         // This coroutineScope waits for all animations inside to complete
@@ -81,9 +86,19 @@ fun SplashScreen(navController: NavController) {
             }
         }
 
-        // --- FIXED NAVIGATION ---
-        // Navigate to the correct route after animations are done
-        navController.navigate(Routes.permission) {
+        // --- CHECK PERMISSION AND NAVIGATE ---
+        val hasLocationPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val destination = if (hasLocationPermission) {
+            Routes.onboarding
+        } else {
+            Routes.permission
+        }
+
+        navController.navigate(destination) {
             // Remove the SplashScreen from the back stack so the user can't go back to it
             popUpTo(Routes.splash) { inclusive = true }
         }

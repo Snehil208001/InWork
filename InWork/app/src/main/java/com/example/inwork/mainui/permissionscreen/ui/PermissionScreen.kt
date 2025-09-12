@@ -1,22 +1,29 @@
 package com.example.inwork.mainui.permissionscreen.ui
 
 import android.Manifest
-import android.app.Activity
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,15 +31,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.airbnb.lottie.compose.*
-import com.example.inwork.R
-import com.example.inwork.core.navigation.Routes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.example.inwork.R
+import com.example.inwork.core.navigation.Routes
 
 @Composable
 fun PermissionScreen(navController: NavController) {
@@ -40,31 +48,31 @@ fun PermissionScreen(navController: NavController) {
     val context = LocalContext.current
     var showBackgroundLocationDialog by remember { mutableStateOf(false) }
 
-    // --- LAUNCHER FOR APP SETTINGS ---
-    val settingsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult(),
+    // This launcher handles the result from the background location permission request.
+    // It will navigate to onboarding whether permission is granted or not.
+    val backgroundLocationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
         onResult = {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                if (ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    navController.navigate(Routes.onboarding) { popUpTo(0) }
-                }
+            // After the user makes a choice, navigate to the onboarding screen.
+            navController.navigate(Routes.onboarding) {
+                popUpTo(Routes.permission) { inclusive = true }
             }
         }
     )
 
-    // --- LAUNCHER FOR FOREGROUND LOCATION ---
+    // This launcher handles the result for the initial foreground location permissions.
     val foregroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
             val allPermissionsGranted = permissions.values.all { it }
             if (allPermissionsGranted) {
+                // If foreground is granted, show the dialog to explain background permission.
                 showBackgroundLocationDialog = true
             } else {
-                (context as? Activity)?.finish()
+                // If the user denies foreground, navigate to onboarding.
+                navController.navigate(Routes.onboarding) {
+                    popUpTo(Routes.permission) { inclusive = true }
+                }
             }
         }
     )
@@ -107,24 +115,42 @@ fun PermissionScreen(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Button(
-                onClick = { (context as? Activity)?.finish() },
-                modifier = Modifier.weight(1f).height(50.dp),
+                onClick = {
+                    // **DENY** button now navigates to onboarding
+                    navController.navigate(Routes.onboarding) {
+                        popUpTo(Routes.permission) { inclusive = true }
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp),
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2DB561), contentColor = Color.White)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2DB561),
+                    contentColor = Color.White
+                )
             ) { Text(text = "DENY", fontSize = 16.sp) }
             Button(
                 onClick = {
-                    val permissionsToRequest = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                    val permissionsToRequest = arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
                     foregroundLocationLauncher.launch(permissionsToRequest)
                 },
-                modifier = Modifier.weight(1f).height(50.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp),
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2DB561), contentColor = Color.White)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2DB561),
+                    contentColor = Color.White
+                )
             ) { Text(text = "ACCEPT", fontSize = 16.sp) }
         }
     }
 
-    // --- BACKGROUND PERMISSION DIALOG (Updated) ---
+    // --- BACKGROUND PERMISSION DIALOG ---
     if (showBackgroundLocationDialog) {
         AlertDialog(
             onDismissRequest = { showBackgroundLocationDialog = false },
@@ -134,10 +160,11 @@ fun PermissionScreen(navController: NavController) {
                 TextButton(
                     onClick = {
                         showBackgroundLocationDialog = false
-                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        val uri = Uri.fromParts("package", context.packageName, null)
-                        intent.data = uri
-                        settingsLauncher.launch(intent)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        } else {
+                            navController.navigate(Routes.onboarding) { popUpTo(0) }
+                        }
                     }
                 ) {
                     Text("CONTINUE")
@@ -147,6 +174,10 @@ fun PermissionScreen(navController: NavController) {
                 TextButton(
                     onClick = {
                         showBackgroundLocationDialog = false
+                        // Also navigate if user cancels the dialog.
+                        navController.navigate(Routes.onboarding) {
+                            popUpTo(Routes.permission) { inclusive = true }
+                        }
                     }
                 ) {
                     Text("CANCEL")
@@ -156,7 +187,6 @@ fun PermissionScreen(navController: NavController) {
     }
 }
 
-// THIS IS THE MISSING FUNCTION
 @Composable
 fun LoaderAnimation(modifier: Modifier, anim: Int) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(anim))
