@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
 import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
 
@@ -20,6 +21,9 @@ fun MyAppNav(modifier: Modifier = Modifier){
         }
         composable(Routes.onboarding){
             OnboardingScreen(navController)
+        }
+        composable(Routes.permission){
+            PermissionScreen(navController)
         }
 
     }

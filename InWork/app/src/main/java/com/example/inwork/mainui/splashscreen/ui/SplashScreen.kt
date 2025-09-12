@@ -83,7 +83,7 @@ fun SplashScreen(navController: NavController) {
 
         // --- FIXED NAVIGATION ---
         // Navigate to the correct route after animations are done
-        navController.navigate(Routes.onboarding) {
+        navController.navigate(Routes.permission) {
             // Remove the SplashScreen from the back stack so the user can't go back to it
             popUpTo(Routes.splash) { inclusive = true }
         }

@@ -4,4 +4,6 @@ object Routes{
     var splash = "Splash"
     var onboarding = "Onboarding"
 
+    var permission = "Permission"
+
 }
