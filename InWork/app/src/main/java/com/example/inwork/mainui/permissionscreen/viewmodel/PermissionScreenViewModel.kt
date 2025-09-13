@@ -25,34 +25,34 @@ class PermissionViewModel : ViewModel() {
     fun onForegroundPermissionResult(permissions: Map<String, Boolean>): Boolean {
         val allPermissionsGranted = permissions.values.all { it }
         if (!allPermissionsGranted) {
-            // If any permission is denied, trigger navigation to the onboarding screen.
-            navigateToOnboarding()
+            // If any permission is denied, trigger navigation to the login screen.
+            navigateToLogin()
         }
         return allPermissionsGranted
     }
 
     /**
      * Called when the user makes a decision on the background location permission.
-     * This function will always navigate to the onboarding screen.
+     * This function will always navigate to the login screen.
      */
     fun onBackgroundPermissionResult() {
-        navigateToOnboarding()
+        navigateToLogin()
     }
 
     /**
      * Called when the user explicitly denies the permission from the UI (e.g., clicks a "DENY" button).
      */
     fun onPermissionDenied() {
-        navigateToOnboarding()
+        navigateToLogin()
     }
 
     /**
-     * Emits a navigation event to the onboarding screen.
+     * Emits a navigation event to the login screen.
      * This is launched in the viewModelScope to ensure it's lifecycle-aware.
      */
-    private fun navigateToOnboarding() {
+    private fun navigateToLogin() {
         viewModelScope.launch {
-            _navigationEvent.emit(NavigationEvent.NavigateToOnboarding)
+            _navigationEvent.emit(NavigationEvent.NavigateToLogin)
         }
     }
 }
@@ -62,7 +62,7 @@ class PermissionViewModel : ViewModel() {
  */
 sealed interface NavigationEvent {
     /**
-     * An event to navigate to the onboarding screen.
+     * An event to navigate to the login screen.
      */
-    data object NavigateToOnboarding : NavigationEvent
+    data object NavigateToLogin : NavigationEvent
 }

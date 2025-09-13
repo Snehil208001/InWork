@@ -41,13 +41,13 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.inwork.R
-import com.example.inwork.core.navigation.Screen // Import the Screen sealed class
+import com.example.inwork.core.navigation.Screen
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun PermissionScreen(
     navController: NavController,
-    viewModel: PermissionViewModel = viewModel() // Hilt can inject this automatically.
+    viewModel: PermissionViewModel = viewModel()
 ) {
     var showBackgroundLocationDialog by remember { mutableStateOf(false) }
 
@@ -61,8 +61,7 @@ fun PermissionScreen(
     val foregroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
-            // Delegate the logic to the ViewModel.
-            // If permissions are granted, show the dialog.
+
             if (viewModel.onForegroundPermissionResult(permissions)) {
                 showBackgroundLocationDialog = true
             }
@@ -73,9 +72,9 @@ fun PermissionScreen(
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collectLatest { event ->
             when (event) {
-                NavigationEvent.NavigateToOnboarding -> {
-                    navController.navigate(Screen.Onboarding.route) {
-                        // Clear the back stack up to the permission screen.
+                NavigationEvent.NavigateToLogin -> {
+                    navController.navigate(Screen.Login.route) {
+
                         popUpTo(Screen.Permission.route) { inclusive = true }
                     }
                 }
@@ -156,7 +155,7 @@ fun PermissionScreen(
         AlertDialog(
             onDismissRequest = {
                 showBackgroundLocationDialog = false
-                viewModel.onPermissionDenied() // Treat dismissing the dialog as a denial.
+                viewModel.onPermissionDenied()
             },
             title = { Text("Background Location Access") },
             text = { Text("This app collects background location data for geofencing and automatic CheckIn/Out, even when the app is closed. Please select 'Allow all the time' to use this feature.") },
@@ -167,7 +166,7 @@ fun PermissionScreen(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         } else {
-                            // On older devices, granting foreground permission is enough.
+
                             viewModel.onBackgroundPermissionResult()
                         }
                     }
@@ -185,12 +184,7 @@ fun PermissionScreen(
     }
 }
 
-/**
- * A composable function to display a Lottie animation.
- *
- * @param modifier Modifier to be applied to the animation.
- * @param anim The resource ID of the raw Lottie animation file.
- */
+
 @Composable
 fun LoaderAnimation(modifier: Modifier, anim: Int) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(anim))
@@ -202,9 +196,7 @@ fun LoaderAnimation(modifier: Modifier, anim: Int) {
     )
 }
 
-/**
- * A preview of the PermissionScreen composable.
- */
+
 @Preview(showBackground = true)
 @Composable
 fun PermissionScreenPreview() {

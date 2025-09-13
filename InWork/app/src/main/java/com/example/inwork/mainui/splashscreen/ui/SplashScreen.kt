@@ -84,15 +84,15 @@ fun SplashScreen(navController: NavController) {
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        // CHANGE THIS BLOCK to use the Screen sealed class
+
         val destination = if (hasLocationPermission) {
-            Screen.Onboarding.route
+            Screen.Login.route
         } else {
             Screen.Permission.route
         }
 
         navController.navigate(destination) {
-            // AND CHANGE THIS LINE
+
             popUpTo(Screen.Splash.route) { inclusive = true }
         }
     }

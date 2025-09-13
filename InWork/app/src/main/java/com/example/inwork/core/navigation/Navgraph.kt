@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
 import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
+import com.example.inwork.mainui.homescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
 import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
@@ -37,6 +38,10 @@ fun MyAppNav(
         composable(Screen.Signup.route) { // Use Screen.Signup.route
             SignUpScreen(navController = navController)
         }
+        composable(Screen.adminHome.route) { // Use Screen.adminHome.route
+            AdminHomeScreen(navController = navController)
+        }
+
 
     }
 }

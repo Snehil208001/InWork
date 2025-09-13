@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.inwork.R
+import com.example.inwork.core.navigation.Screen
 
 // A simple enum to represent the possible roles
 enum class LoginRole {
@@ -174,7 +175,7 @@ fun LoginScreen(navController: NavController) {
                     ClickableText(
                         text = annotatedString,
                         onClick = {
-                            navController.navigate("signup")
+                            navController.navigate(Screen.Signup.route)
                         },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
@@ -185,7 +186,23 @@ fun LoginScreen(navController: NavController) {
         // Login Button
         Button(
             onClick = {
-                navController.navigate("onboarding")
+                // --- NAVIGATION LOGIC ADDED HERE ---
+                if (selectedRole == LoginRole.ADMIN) {
+                    // Navigate to Admin Home Screen and clear the back stack
+                    navController.navigate(Screen.adminHome.route) {
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                } else {
+                    // TODO: Replace with Employee Home Screen navigation
+                    // For now, it navigates to onboarding as a placeholder
+                    navController.navigate(Screen.Onboarding.route) {
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
