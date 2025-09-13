@@ -8,7 +8,6 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,15 +41,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(navController: NavController) {
-    val offsetY = remember { Animatable(-400f) }   // Start high
-    val offsetX = remember { Animatable(0f) }      // Start center
-    val rotation = remember { Animatable(0f) }     // Rotation
+    val offsetY = remember { Animatable(-400f) }
+    val offsetX = remember { Animatable(0f) }
+    val rotation = remember { Animatable(0f) }
     val context = LocalContext.current
 
     LaunchedEffect(true) {
-        // This coroutineScope waits for all animations inside to complete
         coroutineScope {
-            // Y drop - with smooth easing
             launch {
                 offsetY.animateTo(
                     targetValue = 0f,
@@ -63,7 +60,6 @@ fun SplashScreen(navController: NavController) {
                 )
             }
 
-            // X swing - with smooth easing
             launch {
                 offsetX.animateTo(
                     targetValue = 0f,
@@ -77,7 +73,6 @@ fun SplashScreen(navController: NavController) {
                 )
             }
 
-            // Rotation with slower speed to match
             launch {
                 rotation.animateTo(
                     targetValue = 360f,
@@ -86,7 +81,6 @@ fun SplashScreen(navController: NavController) {
             }
         }
 
-        // --- CHECK PERMISSION AND NAVIGATE ---
         val hasLocationPermission = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -99,16 +93,14 @@ fun SplashScreen(navController: NavController) {
         }
 
         navController.navigate(destination) {
-            // Remove the SplashScreen from the back stack so the user can't go back to it
             popUpTo(Routes.splash) { inclusive = true }
         }
     }
 
-    // --- UI Layout (No changes here) ---
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (isSystemInDarkTheme()) Color.Black else Color.White),
+            .background(Color.White), // Always use a white background
     ) {
         Column(
             modifier = Modifier.align(Alignment.Center),

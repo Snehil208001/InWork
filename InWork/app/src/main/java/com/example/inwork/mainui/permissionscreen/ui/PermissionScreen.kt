@@ -45,16 +45,19 @@ import com.example.inwork.core.navigation.Routes
 @Composable
 fun PermissionScreen(navController: NavController) {
 
+    // Get the current context, which is needed for permission checks.
     val context = LocalContext.current
+    // State to control the visibility of the background location permission dialog.
     var showBackgroundLocationDialog by remember { mutableStateOf(false) }
 
     // This launcher handles the result from the background location permission request.
-    // It will navigate to onboarding whether permission is granted or not.
+    // It will navigate to the onboarding screen whether the permission is granted or not.
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = {
             // After the user makes a choice, navigate to the onboarding screen.
             navController.navigate(Routes.onboarding) {
+                // Remove the permission screen from the back stack.
                 popUpTo(Routes.permission) { inclusive = true }
             }
         }
@@ -64,13 +67,15 @@ fun PermissionScreen(navController: NavController) {
     val foregroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
+            // Check if all requested permissions were granted.
             val allPermissionsGranted = permissions.values.all { it }
             if (allPermissionsGranted) {
-                // If foreground is granted, show the dialog to explain background permission.
+                // If foreground permissions are granted, show the dialog to explain and request background permission.
                 showBackgroundLocationDialog = true
             } else {
-                // If the user denies foreground, navigate to onboarding.
+                // If the user denies foreground permissions, navigate to the onboarding screen.
                 navController.navigate(Routes.onboarding) {
+                    // Remove the permission screen from the back stack.
                     popUpTo(Routes.permission) { inclusive = true }
                 }
             }
@@ -78,17 +83,20 @@ fun PermissionScreen(navController: NavController) {
     )
 
     // --- THE UI ---
+    // A column to arrange UI elements vertically.
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize() // Take up the whole screen.
+            .padding(horizontal = 24.dp, vertical = 48.dp), // Add padding.
+        horizontalAlignment = Alignment.CenterHorizontally // Center elements horizontally.
     ) {
+        // Display a Lottie animation.
         LoaderAnimation(
             modifier = Modifier.size(250.dp),
             anim = R.raw.earth2,
         )
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(40.dp)) // Add vertical space.
+        // Title text.
         Text(
             text = "Use your Location",
             fontSize = 32.sp,
@@ -96,6 +104,7 @@ fun PermissionScreen(navController: NavController) {
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(16.dp))
+        // Explanatory text for the permission request.
         Text(
             text = "To use automatic CheckIn/CheckOut feature of the App, allow Inwork to use your location all the time.",
             textAlign = TextAlign.Center,
@@ -103,26 +112,29 @@ fun PermissionScreen(navController: NavController) {
             color = Color.Gray
         )
         Spacer(modifier = Modifier.height(12.dp))
+        // More detailed explanation.
         Text(
             text = "Inwork collects location data to get automatic checkIn and CheckOut when the Employee enters or exits the office even when the app is closed or not in use.",
             textAlign = TextAlign.Center,
             fontSize = 14.sp,
             color = Color.Gray
         )
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f)) // Pushes the buttons to the bottom.
+        // A row to arrange the buttons horizontally.
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // The "DENY" button.
             Button(
                 onClick = {
-                    // **DENY** button now navigates to onboarding
+                    // If the user denies, navigate to the onboarding screen.
                     navController.navigate(Routes.onboarding) {
                         popUpTo(Routes.permission) { inclusive = true }
                     }
                 },
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1f) // Each button takes up equal space.
                     .height(50.dp),
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
@@ -130,12 +142,15 @@ fun PermissionScreen(navController: NavController) {
                     contentColor = Color.White
                 )
             ) { Text(text = "DENY", fontSize = 16.sp) }
+            // The "ACCEPT" button.
             Button(
                 onClick = {
+                    // The permissions to request.
                     val permissionsToRequest = arrayOf(
                         Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     )
+                    // Launch the permission request.
                     foregroundLocationLauncher.launch(permissionsToRequest)
                 },
                 modifier = Modifier
@@ -151,6 +166,7 @@ fun PermissionScreen(navController: NavController) {
     }
 
     // --- BACKGROUND PERMISSION DIALOG ---
+    // This dialog is shown only when `showBackgroundLocationDialog` is true.
     if (showBackgroundLocationDialog) {
         AlertDialog(
             onDismissRequest = { showBackgroundLocationDialog = false },
@@ -160,9 +176,11 @@ fun PermissionScreen(navController: NavController) {
                 TextButton(
                     onClick = {
                         showBackgroundLocationDialog = false
+                        // Check if the device is running Android Q (API 29) or higher, as background location permission was introduced in this version.
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         } else {
+                            // For older versions, navigate directly to onboarding.
                             navController.navigate(Routes.onboarding) { popUpTo(0) }
                         }
                     }
@@ -174,7 +192,7 @@ fun PermissionScreen(navController: NavController) {
                 TextButton(
                     onClick = {
                         showBackgroundLocationDialog = false
-                        // Also navigate if user cancels the dialog.
+                        // Also navigate if the user cancels the dialog.
                         navController.navigate(Routes.onboarding) {
                             popUpTo(Routes.permission) { inclusive = true }
                         }
@@ -187,10 +205,19 @@ fun PermissionScreen(navController: NavController) {
     }
 }
 
+/**
+ * A composable function to display a Lottie animation.
+ *
+ * @param modifier Modifier to be applied to the animation.
+ * @param anim The resource ID of the raw Lottie animation file.
+ */
 @Composable
 fun LoaderAnimation(modifier: Modifier, anim: Int) {
+    // Load the Lottie animation from the raw resources.
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(anim))
+    // Animate the progress of the Lottie animation.
     val progress by animateLottieCompositionAsState(composition)
+    // Display the Lottie animation.
     LottieAnimation(
         composition = composition,
         progress = { progress },
@@ -198,6 +225,10 @@ fun LoaderAnimation(modifier: Modifier, anim: Int) {
     )
 }
 
+/**
+ * A preview of the PermissionScreen composable.
+ * This is used for development and testing in Android Studio.
+ */
 @Preview(showBackground = true)
 @Composable
 fun PermissionScreenPreview() {
