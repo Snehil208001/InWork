@@ -35,7 +35,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.inwork.R
-import com.example.inwork.core.navigation.Routes // Import your Routes object
+import com.example.inwork.core.navigation.Screen // Import the Screen sealed class
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -59,7 +59,6 @@ fun SplashScreen(navController: NavController) {
                     }
                 )
             }
-
             launch {
                 offsetX.animateTo(
                     targetValue = 0f,
@@ -72,7 +71,6 @@ fun SplashScreen(navController: NavController) {
                     }
                 )
             }
-
             launch {
                 rotation.animateTo(
                     targetValue = 360f,
@@ -86,21 +84,24 @@ fun SplashScreen(navController: NavController) {
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
+        // CHANGE THIS BLOCK to use the Screen sealed class
         val destination = if (hasLocationPermission) {
-            Routes.onboarding
+            Screen.Onboarding.route
         } else {
-            Routes.permission
+            Screen.Permission.route
         }
 
         navController.navigate(destination) {
-            popUpTo(Routes.splash) { inclusive = true }
+            // AND CHANGE THIS LINE
+            popUpTo(Screen.Splash.route) { inclusive = true }
         }
     }
 
+    // --- UI Layout (No changes needed here) ---
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White), // Always use a white background
+            .background(Color.White),
     ) {
         Column(
             modifier = Modifier.align(Alignment.Center),
@@ -122,7 +123,6 @@ fun SplashScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
         }
-
         Text(
             text = "Design by INVYU",
             fontSize = 20.sp,
