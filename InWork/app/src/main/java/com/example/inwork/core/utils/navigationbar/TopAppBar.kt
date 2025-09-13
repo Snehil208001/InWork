@@ -33,7 +33,6 @@ fun InWorkTopAppBar(
         title = {
             Text(
                 text = "Home",
-                // CHANGED: Ensured font weight is bold and increased size slightly
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp,
                 color = Color.Black
@@ -47,7 +46,7 @@ fun InWorkTopAppBar(
                     modifier = Modifier
                         .border(
                             width = 2.dp,
-                            color = Color.Black, // Border color from image
+                            color = Color.Black,
                             shape = CircleShape
                         )
                         .padding(8.dp)
@@ -72,7 +71,6 @@ fun InWorkTopAppBar(
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            // CHANGED: More vibrant green background
             containerColor = Color(0xFFC8E6C9)
         )
     )

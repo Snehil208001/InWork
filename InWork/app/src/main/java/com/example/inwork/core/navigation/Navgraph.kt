@@ -6,9 +6,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
 import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
-import com.example.inwork.mainui.homescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
 import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
