@@ -10,81 +10,47 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-
-
-// Your original MenuItem data class, which remains unchanged as requested.
-data class MenuItem(val title: String, val icon: ImageVector)
+import com.example.inwork.mainui.allmenuscreen.viewmodel.AllMenuViewModel
+import com.example.inwork.mainui.allmenuscreen.viewmodel.MenuItem
 
 
 /**
- * The main content composable that builds the entire multi-section menu screen,
- * themed to match your app's TopAppBar and BottomAppBar.
+ * The main content composable that builds the entire multi-section menu screen.
+ * It is now stateless and driven by the AllMenuViewModel.
  */
 @Composable
-fun AllMenuContent(modifier: Modifier = Modifier, navController: NavController) {
-    // --- Data Categorized from Your Full List ---
+fun AllMenuContent(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: AllMenuViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsState()
 
-
-    // Category 1: General & Personal
-    val generalItems = listOf(
-        MenuItem("Home", Icons.Default.Home),
-        MenuItem("Profile", Icons.Default.Person),
-        MenuItem("News", Icons.Default.Newspaper),
-        MenuItem("Check Weather", Icons.Default.WbSunny)
-    )
-
-
-    // Category 2: Employee & Office Management
-    val managementItems = listOf(
-        MenuItem("All Employees", Icons.Default.Groups),
-        MenuItem("Add Employee", Icons.Default.PersonAdd),
-        MenuItem("Employee Status", Icons.Default.Work),
-        MenuItem("Leave Request", Icons.Default.CalendarToday),
-        MenuItem("Monthly Reports", Icons.Default.Assessment),
-        MenuItem("All Offices", Icons.Default.LocationCity),
-        MenuItem("Add Offices", Icons.Default.Business),
-        MenuItem("Screen Time Details", Icons.Default.Smartphone)
-    )
-
-
-    // Category 3: Communication & Events
-    val communicationItems = listOf(
-        MenuItem("Sent Notices", Icons.Default.Send),
-        MenuItem("Add Event", Icons.Default.Event)
-    )
-
-
-    // Category 4: App Support
-    val supportItems = listOf(
-        MenuItem("Contact Us", Icons.Default.Call),
-        MenuItem("Settings", Icons.Default.Settings)
-    )
-
-
-    // --- Screen Layout ---
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White), // White background for a clean look
-        contentPadding = PaddingValues(bottom = 16.dp), // Add padding at the bottom
+            .background(Color.White),
+        contentPadding = PaddingValues(bottom = 16.dp),
     ) {
         // "General" Section
         item {
             SectionHeader("General")
         }
         item {
-            MenuRow(items = generalItems)
+            MenuRow(items = state.generalItems)
         }
 
 
@@ -99,7 +65,7 @@ fun AllMenuContent(modifier: Modifier = Modifier, navController: NavController) 
         item {
             SectionHeader("Management Tools")
         }
-        items(managementItems.chunked(4)) { rowItems ->
+        items(state.managementItems.chunked(4)) { rowItems ->
             MenuRow(items = rowItems)
         }
 
@@ -109,7 +75,7 @@ fun AllMenuContent(modifier: Modifier = Modifier, navController: NavController) 
             SectionHeader("Communication")
         }
         item {
-            MenuRow(items = communicationItems)
+            MenuRow(items = state.communicationItems)
         }
 
 
@@ -118,7 +84,7 @@ fun AllMenuContent(modifier: Modifier = Modifier, navController: NavController) 
             SectionHeader("Support")
         }
         item {
-            MenuRow(items = supportItems)
+            MenuRow(items = state.supportItems)
         }
     }
 }
@@ -222,7 +188,6 @@ fun NewMenuItemCard(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        // Use the same light green as your TopAppBar and BottomAppBar
         colors = CardDefaults.cardColors(containerColor = Color(0xFFC8E6C9)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         onClick = onClick
@@ -259,4 +224,5 @@ fun NewMenuItemCard(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AllMenuContentPreview() {
-    AllMenuContent(navController = rememberNavController())}
+    AllMenuContent(navController = rememberNavController())
+}

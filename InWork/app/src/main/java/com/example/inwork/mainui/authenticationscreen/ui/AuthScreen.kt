@@ -1,5 +1,9 @@
 package com.example.inwork.mainui.authenticationscreen.ui
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -46,6 +50,22 @@ fun LoginScreen(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var showForgotPasswordDialog by remember { mutableStateOf(false) }
     val passwordFocusRequester = remember { FocusRequester() }
+
+    // --- Notification Permission Logic ---
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            // You can handle the result here if needed (e.g., show a message)
+        }
+    )
+
+    // Request notification permission when the screen is first composed
+    LaunchedEffect(key1 = true) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+    // --- End of Notification Permission Logic ---
 
     if (showForgotPasswordDialog) {
         ForgotPasswordDialog(
@@ -176,7 +196,7 @@ fun LoginScreen(navController: NavController) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     } else {
-                        navController.navigate(Screen.Onboarding.route) {
+                        navController.navigate(Screen.userHome.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     }

@@ -1,22 +1,12 @@
 package com.example.inwork.mainui.splashscreen.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,73 +21,76 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.inwork.R
-import com.example.inwork.core.navigation.Screen // Import the Screen sealed class
-import kotlinx.coroutines.coroutineScope
+import com.example.inwork.core.navigation.Screen
+import com.example.inwork.mainui.splashscreen.viewmodel.SplashEvent
+import com.example.inwork.mainui.splashscreen.viewmodel.SplashScreenViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(
+    navController: NavController,
+    viewModel: SplashScreenViewModel = viewModel()
+) {
     val offsetY = remember { Animatable(-400f) }
     val offsetX = remember { Animatable(0f) }
     val rotation = remember { Animatable(0f) }
     val context = LocalContext.current
 
-    LaunchedEffect(true) {
-        coroutineScope {
-            launch {
-                offsetY.animateTo(
-                    targetValue = 0f,
-                    animationSpec = keyframes {
-                        durationMillis = 1500
-                        -400f at 0 using FastOutSlowInEasing
-                        80f at 700 using FastOutSlowInEasing
-                        0f at 1200 using FastOutSlowInEasing
-                    }
-                )
-            }
-            launch {
-                offsetX.animateTo(
-                    targetValue = 0f,
-                    animationSpec = keyframes {
-                        durationMillis = 1500
-                        0f at 0 using FastOutSlowInEasing
-                        90f at 300 using FastOutSlowInEasing
-                        80f at 500 using FastOutSlowInEasing
-                        0f at 1200 using FastOutSlowInEasing
-                    }
-                )
-            }
-            launch {
-                rotation.animateTo(
-                    targetValue = 360f,
-                    animationSpec = tween(durationMillis = 2500, easing = FastOutSlowInEasing)
-                )
-            }
+    LaunchedEffect(key1 = true) {
+        // Start the animations
+        launch {
+            offsetY.animateTo(
+                targetValue = 0f,
+                animationSpec = keyframes {
+                    durationMillis = 1500
+                    -400f at 0 using FastOutSlowInEasing
+                    80f at 700 using FastOutSlowInEasing
+                    0f at 1200 using FastOutSlowInEasing
+                }
+            )
+        }
+        launch {
+            offsetX.animateTo(
+                targetValue = 0f,
+                animationSpec = keyframes {
+                    durationMillis = 1500
+                    0f at 0 using FastOutSlowInEasing
+                    90f at 300 using FastOutSlowInEasing
+                    80f at 500 using FastOutSlowInEasing
+                    0f at 1200 using FastOutSlowInEasing
+                }
+            )
+        }
+        launch {
+            rotation.animateTo(
+                targetValue = 360f,
+                animationSpec = tween(durationMillis = 2500, easing = FastOutSlowInEasing)
+            )
         }
 
-        val hasLocationPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
+        // Let the ViewModel decide where to navigate next
+        viewModel.decideNextScreen(context)
+    }
 
-
-        val destination = if (hasLocationPermission) {
-            Screen.Login.route
-        } else {
-            Screen.Permission.route
-        }
-
-        navController.navigate(destination) {
-
-            popUpTo(Screen.Splash.route) { inclusive = true }
+    // Observe navigation events from the ViewModel
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is SplashEvent.Navigate -> {
+                    navController.navigate(event.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            }
         }
     }
 
-    // --- UI Layout (No changes needed here) ---
+    // --- UI Layout ---
     Box(
         modifier = Modifier
             .fillMaxSize()

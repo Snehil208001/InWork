@@ -13,6 +13,7 @@ import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
 import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
+import com.example.inwork.mainui.userhomescreen.ui.UserHomeScreen
 
 @Composable
 fun MyAppNav(
@@ -41,6 +42,9 @@ fun MyAppNav(
         }
         composable(Screen.adminHome.route) { // Use Screen.adminHome.route
             AdminHomeScreen(navController = navController)
+        }
+        composable(Screen.userHome.route) {
+            UserHomeScreen(navController = navController)
         }
         composable(Screen.AllMenu.route) { // Use Screen.AllMenu.route
             AllMenuContent(navController = navController)
