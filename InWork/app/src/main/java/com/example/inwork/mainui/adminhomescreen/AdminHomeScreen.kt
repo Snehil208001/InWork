@@ -56,7 +56,7 @@ fun AdminHomeScreen(navController: NavController) {
                 )
             },
             bottomBar = {
-                AdminBottomAppBar()
+                AdminBottomAppBar(navController)
             },
             floatingActionButton = {
                 FloatingActionButton(

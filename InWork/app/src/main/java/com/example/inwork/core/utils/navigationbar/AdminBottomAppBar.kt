@@ -34,9 +34,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.inwork.core.navigation.Screen
 
 @Composable
-fun AdminBottomAppBar() {
+fun AdminBottomAppBar(navController: NavController) {
     BottomAppBar(
         modifier = Modifier.clip(BottomAppBarShape()),
         containerColor = Color(0xFFC8E6C9),
@@ -64,7 +67,9 @@ fun AdminBottomAppBar() {
             )
             NavigationBarItem(
                 selected = false,
-                onClick = { /* ... */ },
+                onClick = {
+                    navController.navigate(Screen.AllMenu.route)
+                },
                 icon = { Icon(Icons.Default.Apps, contentDescription = "All Menue", modifier = Modifier.size(28.dp)) },
                 label = { Text("All Menue", fontSize = 12.sp) },
                 colors = NavigationBarItemDefaults.colors(
@@ -157,5 +162,5 @@ class BottomAppBarShape(
 @Preview(showBackground = true)
 @Composable
 fun AdminBottomAppBarPreview() {
-    AdminBottomAppBar()
+    AdminBottomAppBar(navController = rememberNavController())
 }

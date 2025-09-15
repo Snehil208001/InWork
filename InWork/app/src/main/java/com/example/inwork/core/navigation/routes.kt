@@ -27,4 +27,6 @@ sealed class Screen(val route: String) {
 
     data object adminHome : Screen("adminHome")
 
+    data object AllMenu : Screen("all_menu")
+
 }
