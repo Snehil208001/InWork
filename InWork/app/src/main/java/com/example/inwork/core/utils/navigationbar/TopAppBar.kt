@@ -27,12 +27,13 @@ import com.example.inwork.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InWorkTopAppBar(
+    title: String, // Add title parameter
     onNavigationIconClick: () -> Unit
 ) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = "Home",
+                text = title, // Use the title parameter
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp,
                 color = Color.Black
@@ -79,5 +80,5 @@ fun InWorkTopAppBar(
 @Preview(showBackground = true)
 @Composable
 fun InWorkTopAppBarPreview() {
-    InWorkTopAppBar(onNavigationIconClick = {})
+    InWorkTopAppBar(title = "Preview Title", onNavigationIconClick = {})
 }

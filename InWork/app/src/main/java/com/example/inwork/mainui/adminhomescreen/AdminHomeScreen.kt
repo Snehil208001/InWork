@@ -10,8 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,17 +22,27 @@ import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import kotlinx.coroutines.launch
 
+// Sealed class to represent the different content states of the admin screen
+sealed class AdminScreen(val title: String) {
+    object Home : AdminScreen("Home")
+    object AllMenu : AdminScreen("All Menu")
+    object SentNotice : AdminScreen("Sent Notices")
+    object Notification : AdminScreen("Notifications")
+}
+
 @Composable
 fun AdminHomeScreen(navController: NavController) {
-    // 1. State for controlling the drawer (open/closed)
+    // State for controlling the drawer (open/closed)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // 2. Wrap the screen in a ModalNavigationDrawer
+    // State to manage the currently selected screen/content
+    var currentScreen by remember { mutableStateOf<AdminScreen>(AdminScreen.Home) }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // 3. Provide the AdminSideBar as the drawer's content
+            // Provide the AdminSideBar as the drawer's content
             ModalDrawerSheet {
                 AdminSideBar(
                     companyName = "Apple",
@@ -44,8 +53,9 @@ fun AdminHomeScreen(navController: NavController) {
     ) {
         Scaffold(
             topBar = {
-                // 4. Open the drawer when the menu icon is clicked
+                // Open the drawer when the menu icon is clicked
                 InWorkTopAppBar(
+                    title = currentScreen.title, // Title is now dynamic
                     onNavigationIconClick = {
                         scope.launch {
                             drawerState.apply {
@@ -56,7 +66,12 @@ fun AdminHomeScreen(navController: NavController) {
                 )
             },
             bottomBar = {
-                AdminBottomAppBar(navController)
+                AdminBottomAppBar(
+                    currentScreen = currentScreen,
+                    onScreenSelected = { newScreen ->
+                        currentScreen = newScreen
+                    }
+                )
             },
             floatingActionButton = {
                 FloatingActionButton(
@@ -76,15 +91,45 @@ fun AdminHomeScreen(navController: NavController) {
             },
             floatingActionButtonPosition = FabPosition.Center,
         ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .background(Color.White)
-            ) {
-                Text(
-                    text = "Admin Home Screen Content",
-                )
+            // Conditionally display content based on the currentScreen state
+            when (currentScreen) {
+                is AdminScreen.Home -> {
+                    Column(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .background(Color.White)
+                    ) {
+                        Text(
+                            text = "Admin Home Screen Content",
+                        )
+                    }
+                }
+                is AdminScreen.AllMenu -> {
+                    AllMenuContent(modifier = Modifier.padding(innerPadding), navController = navController)
+                }
+                is AdminScreen.SentNotice -> {
+                    // Placeholder for Sent Notice Screen Content
+                    Column(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .background(Color.White)
+                    ) {
+                        Text(text = "Sent Notice Content")
+                    }
+                }
+                is AdminScreen.Notification -> {
+                    // Placeholder for Notification Screen Content
+                    Column(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .background(Color.White)
+                    ) {
+                        Text(text = "Notification Content")
+                    }
+                }
             }
         }
     }

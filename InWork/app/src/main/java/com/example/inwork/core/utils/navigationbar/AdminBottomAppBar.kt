@@ -34,12 +34,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.inwork.core.navigation.Screen
+import com.example.inwork.mainui.adminhomescreen.ui.AdminScreen
 
 @Composable
-fun AdminBottomAppBar(navController: NavController) {
+fun AdminBottomAppBar(
+    currentScreen: AdminScreen,
+    onScreenSelected: (AdminScreen) -> Unit
+) {
     BottomAppBar(
         modifier = Modifier.clip(BottomAppBarShape()),
         containerColor = Color(0xFFC8E6C9),
@@ -53,10 +54,10 @@ fun AdminBottomAppBar(navController: NavController) {
             val unselectedColor = Color.DarkGray
 
             NavigationBarItem(
-                selected = true,
-                onClick = { /* ... */ },
+                selected = currentScreen == AdminScreen.Home,
+                onClick = { onScreenSelected(AdminScreen.Home) },
                 icon = { Icon(Icons.Default.Home, contentDescription = "Home", modifier = Modifier.size(28.dp)) },
-                label = { Text("Home", fontSize = 12.sp, fontWeight = FontWeight.Bold) },
+                label = { Text("Home", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.Home) FontWeight.Bold else FontWeight.Normal) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
@@ -66,12 +67,10 @@ fun AdminBottomAppBar(navController: NavController) {
                 )
             )
             NavigationBarItem(
-                selected = false,
-                onClick = {
-                    navController.navigate(Screen.AllMenu.route)
-                },
-                icon = { Icon(Icons.Default.Apps, contentDescription = "All Menue", modifier = Modifier.size(28.dp)) },
-                label = { Text("All Menue", fontSize = 12.sp) },
+                selected = currentScreen == AdminScreen.AllMenu,
+                onClick = { onScreenSelected(AdminScreen.AllMenu) },
+                icon = { Icon(Icons.Default.Apps, contentDescription = "All Menu", modifier = Modifier.size(28.dp)) },
+                label = { Text("All Menu", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.AllMenu) FontWeight.Bold else FontWeight.Normal) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
@@ -84,10 +83,10 @@ fun AdminBottomAppBar(navController: NavController) {
             Spacer(modifier = Modifier.width(80.dp))
 
             NavigationBarItem(
-                selected = false,
-                onClick = { /* ... */ },
+                selected = currentScreen == AdminScreen.SentNotice,
+                onClick = { onScreenSelected(AdminScreen.SentNotice) },
                 icon = { Icon(Icons.Default.Article, contentDescription = "Sent Notice", modifier = Modifier.size(28.dp)) },
-                label = { Text("Sent Notice", fontSize = 12.sp) },
+                label = { Text("Sent Notice", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.SentNotice) FontWeight.Bold else FontWeight.Normal) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
@@ -97,10 +96,10 @@ fun AdminBottomAppBar(navController: NavController) {
                 )
             )
             NavigationBarItem(
-                selected = false,
-                onClick = { /* ... */ },
+                selected = currentScreen == AdminScreen.Notification,
+                onClick = { onScreenSelected(AdminScreen.Notification) },
                 icon = { Icon(Icons.Default.Notifications, contentDescription = "Notification", modifier = Modifier.size(28.dp)) },
-                label = { Text("Notification", fontSize = 12.sp) },
+                label = { Text("Notification", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.Notification) FontWeight.Bold else FontWeight.Normal) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
@@ -162,5 +161,5 @@ class BottomAppBarShape(
 @Preview(showBackground = true)
 @Composable
 fun AdminBottomAppBarPreview() {
-    AdminBottomAppBar(navController = rememberNavController())
+    AdminBottomAppBar(currentScreen = AdminScreen.Home, onScreenSelected = {})
 }

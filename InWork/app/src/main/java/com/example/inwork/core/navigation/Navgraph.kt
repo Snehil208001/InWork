@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
-import com.example.inwork.mainui.adminhomescreen.ui.AllMenuScreen
+import com.example.inwork.mainui.adminhomescreen.ui.AllMenuContent
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
 import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
@@ -43,7 +43,7 @@ fun MyAppNav(
             AdminHomeScreen(navController = navController)
         }
         composable(Screen.AllMenu.route) { // Use Screen.AllMenu.route
-            AllMenuScreen(navController = navController)
+            AllMenuContent(navController = navController)
         }
     }
 }
