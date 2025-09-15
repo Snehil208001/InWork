@@ -103,7 +103,7 @@ fun UserSideBar(
 }
 
 @Composable
-private fun NavigationHeader(text: String) {
+fun NavigationHeader(text: String) {
     Text(
         text = text,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -113,7 +113,7 @@ private fun NavigationHeader(text: String) {
 }
 
 @Composable
-private fun NavigationMenuItem(icon: ImageVector, text: String, onClick: () -> Unit = {}) {
+fun NavigationMenuItem(icon: ImageVector, text: String, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

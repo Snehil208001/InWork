@@ -3,6 +3,7 @@ package com.example.inwork.mainui.adminhomescreen.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -34,17 +35,21 @@ import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
+import com.example.inwork.mainui.eventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
+import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import kotlinx.coroutines.launch
 
-// Sealed class to represent the different content states of the admin screen
 sealed class AdminScreen(val title: String) {
     object Home : AdminScreen("Home")
     object AllMenu : AdminScreen("All Menu")
     object SentNotice : AdminScreen("Sent Notices")
     object Notification : AdminScreen("Notifications")
+    object CreateNotice : AdminScreen("Notice")
+    object AddEvent : AdminScreen("Add Event")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminHomeScreen(
     navController: NavController,
@@ -56,7 +61,10 @@ fun AdminHomeScreen(
     val currentScreen = state.currentScreen
     val context = LocalContext.current
 
-    // Observe lifecycle events to refresh permission status on resume
+    BackHandler(enabled = state.screenStack.size > 1) {
+        viewModel.onEvent(AdminHomeEvent.NavigateBack)
+    }
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -70,7 +78,6 @@ fun AdminHomeScreen(
         }
     }
 
-    // Launcher for background location permission
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -78,13 +85,11 @@ fun AdminHomeScreen(
         }
     )
 
-    // Launcher for foreground location permission
     val foregroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             if (isGranted) {
                 viewModel.onEvent(AdminHomeEvent.LocationPermissionUpdated(true))
-                // Now that we have foreground permission, we can request background permission
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }
@@ -100,7 +105,15 @@ fun AdminHomeScreen(
             ModalDrawerSheet {
                 AdminSideBar(
                     companyName = "Apple",
-                    email = "soumadeepbarik@gmail.com"
+                    email = "soumadeepbarik@gmail.com",
+                    onAddEventClick = {
+                        viewModel.onEvent(AdminHomeEvent.AddEventClicked)
+                        scope.launch { drawerState.close() }
+                    },
+                    onSendNoticeClick = {
+                        viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked)
+                        scope.launch { drawerState.close() }
+                    }
                 )
             }
         }
@@ -126,7 +139,7 @@ fun AdminHomeScreen(
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { /* Handle FAB click */ },
+                    onClick = { viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked) },
                     modifier = Modifier.offset(y = 60.dp),
                     shape = CircleShape,
                     containerColor = Color(0xFF4CAF50),
@@ -135,7 +148,7 @@ fun AdminHomeScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add",
+                        contentDescription = "Create Notice",
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -147,15 +160,13 @@ fun AdminHomeScreen(
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
-                // Show banner if permission is not granted
                 if (!state.hasLocationPermission) {
                     LocationPermissionBanner(onBannerClick = {
-                        val hasForegroundPermission = ContextCompat.checkSelfPermission(
+                        val hasForeground = ContextCompat.checkSelfPermission(
                             context,
                             Manifest.permission.ACCESS_FINE_LOCATION
                         ) == PackageManager.PERMISSION_GRANTED
-
-                        if (hasForegroundPermission) {
+                        if (hasForeground) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             }
@@ -165,32 +176,32 @@ fun AdminHomeScreen(
                     })
                 }
 
-                // Conditionally display content based on the currentScreen state
                 when (currentScreen) {
                     is AdminScreen.Home -> {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.White)
-                        ) {
+                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
                             Text(text = "Admin Home Screen Content")
                         }
                     }
-
                     is AdminScreen.AllMenu -> {
                         AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                     }
-
                     is AdminScreen.SentNotice -> {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.White)
-                        ) {
-                            Text(text = "Sent Notice Content")
+                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                            Text(text = "Sent Notice Content - A list of sent notices would go here.")
                         }
                     }
-
+                    is AdminScreen.CreateNotice -> {
+                        SendNoticeScreen { title, notice ->
+                            println("Sending Notice -> Title: $title, Notice: $notice")
+                            viewModel.onEvent(AdminHomeEvent.NavigateBack)
+                        }
+                    }
+                    is AdminScreen.AddEvent -> {
+                        AddEventScreen { date, event ->
+                            println("Saving Event -> Date: $date, Event: $event")
+                            viewModel.onEvent(AdminHomeEvent.NavigateBack)
+                        }
+                    }
                     is AdminScreen.Notification -> {
                         NotificationScreen()
                     }
@@ -198,10 +209,4 @@ fun AdminHomeScreen(
             }
         }
     }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun AdminHomeScreenPreview() {
-    AdminHomeScreen(navController = rememberNavController())
 }

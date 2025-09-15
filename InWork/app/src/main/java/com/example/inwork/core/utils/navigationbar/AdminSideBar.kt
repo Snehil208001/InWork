@@ -2,24 +2,43 @@ package com.example.inwork.core.utils.navigationbar
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationCity
+import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inwork.R
@@ -27,14 +46,15 @@ import com.example.inwork.R
 @Composable
 fun AdminSideBar(
     companyName: String,
-    email: String
+    email: String,
+    onAddEventClick: () -> Unit,
+    onSendNoticeClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(300.dp) // Standard width for a navigation drawer
+            .width(300.dp)
     ) {
-        // Header Section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -67,18 +87,17 @@ fun AdminSideBar(
 
         Divider(color = Color.LightGray)
 
-        // Menu Items Section
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFE8F5E9)) // Light green background
+                .background(Color(0xFFE8F5E9))
         ) {
             item {
                 NavigationMenuItem(icon = Icons.Default.Home, text = "Home")
                 NavigationMenuItem(icon = Icons.Default.Person, text = "Profile")
                 NavigationMenuItem(icon = Icons.Default.Groups, text = "All Employees")
                 NavigationMenuItem(icon = Icons.Default.Send, text = "Sent Notices")
-                NavigationMenuItem(icon = Icons.Default.Event, text = "Add Event")
+                NavigationMenuItem(icon = Icons.Default.Event, text = "Add Event", onClick = onAddEventClick)
             }
 
             item { NavigationHeader(text = "Manage Employees") }
@@ -86,7 +105,7 @@ fun AdminSideBar(
                 NavigationMenuItem(icon = Icons.Default.Work, text = "Employee Status")
                 NavigationMenuItem(icon = Icons.Default.CalendarToday, text = "Leave Requests")
                 NavigationMenuItem(icon = Icons.Default.Assessment, text = "Monthly Reports")
-                NavigationMenuItem(icon = Icons.Default.Send, text = "Send Notice")
+                NavigationMenuItem(icon = Icons.Default.Send, text = "Send Notice", onClick = onSendNoticeClick)
                 NavigationMenuItem(icon = Icons.Default.PersonAdd, text = "Add Employee")
                 NavigationMenuItem(icon = Icons.Default.Business, text = "Add Offices")
                 NavigationMenuItem(icon = Icons.Default.LocationCity, text = "All Offices")
@@ -95,61 +114,6 @@ fun AdminSideBar(
                 NavigationMenuItem(icon = Icons.Default.Newspaper, text = "Memes, Jokes and News")
                 NavigationMenuItem(icon = Icons.Default.WbSunny, text = "Check Weather")
             }
-
-            item { NavigationHeader(text = "Attendance") }
-            item {
-                NavigationMenuItem(icon = Icons.Default.Login, text = "CheckIn")
-                NavigationMenuItem(icon = Icons.Default.Logout, text = "CheckOut")
-            }
-
-            item { NavigationHeader(text = "Log Out") }
-            item {
-                NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us")
-                NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings")
-                NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout")
-            }
         }
     }
-}
-
-@Composable
-private fun NavigationHeader(text: String) {
-    Text(
-        text = text,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        fontWeight = FontWeight.Bold,
-        color = Color.Gray
-    )
-}
-
-@Composable
-private fun NavigationMenuItem(icon: ImageVector, text: String, onClick: () -> Unit = {}) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = text,
-            tint = Color.Black.copy(alpha = 0.7f)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = text,
-            color = Color.Black.copy(alpha = 0.9f),
-            fontSize = 16.sp
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AdminSideBarPreview() {
-    AdminSideBar(
-        companyName = "Apple",
-        email = "soumadeepbarik@gmail.com"
-    )
 }

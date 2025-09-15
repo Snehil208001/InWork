@@ -11,57 +11,52 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-/**
- * Represents the state of the AdminHomeScreen.
- *
- * @property currentScreen The currently selected screen in the bottom navigation.
- * @property hasLocationPermission True if fine location permission is granted, false otherwise.
- */
 data class AdminHomeState(
-    val currentScreen: AdminScreen = AdminScreen.Home,
+    val screenStack: List<AdminScreen> = listOf(AdminScreen.Home),
     val hasLocationPermission: Boolean = false
-)
-
-/**
- * Defines the events that can be sent from the UI to the ViewModel.
- */
-sealed class AdminHomeEvent {
-    /**
-     * Event triggered when a new screen is selected from the bottom navigation bar.
-     * @param screen The new screen to display.
-     */
-    data class ScreenSelected(val screen: AdminScreen) : AdminHomeEvent()
-
-    /**
-     * Event to update the location permission status.
-     * @param isGranted True if the permission was granted, false otherwise.
-     */
-    data class LocationPermissionUpdated(val isGranted: Boolean) : AdminHomeEvent()
-
-    /**
-     * Event to check the current location permission status.
-     * @param context The application context.
-     */
-    data class CheckLocationPermission(val context: Context) : AdminHomeEvent()
+) {
+    val currentScreen: AdminScreen
+        get() = screenStack.last()
 }
 
+sealed class AdminHomeEvent {
+    data class ScreenSelected(val screen: AdminScreen) : AdminHomeEvent()
+    data class LocationPermissionUpdated(val isGranted: Boolean) : AdminHomeEvent()
+    data class CheckLocationPermission(val context: Context) : AdminHomeEvent()
+    object CreateNoticeClicked : AdminHomeEvent()
+    object AddEventClicked : AdminHomeEvent()
+    object NavigateBack : AdminHomeEvent()
+}
 
-/**
- * ViewModel for the AdminHomeScreen.
- */
 class AdminHomeViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(AdminHomeState())
     val state: StateFlow<AdminHomeState> = _state.asStateFlow()
 
-    /**
-     * Handles events sent from the UI.
-     * @param event The event to handle.
-     */
     fun onEvent(event: AdminHomeEvent) {
         when (event) {
             is AdminHomeEvent.ScreenSelected -> {
-                _state.update { it.copy(currentScreen = event.screen) }
+                _state.update { it.copy(screenStack = listOf(event.screen)) }
+            }
+            is AdminHomeEvent.CreateNoticeClicked -> {
+                _state.update {
+                    val newStack = it.screenStack.toMutableList().apply { add(AdminScreen.CreateNotice) }
+                    it.copy(screenStack = newStack)
+                }
+            }
+            is AdminHomeEvent.AddEventClicked -> {
+                _state.update {
+                    val newStack = it.screenStack.toMutableList().apply { add(AdminScreen.AddEvent) }
+                    it.copy(screenStack = newStack)
+                }
+            }
+            is AdminHomeEvent.NavigateBack -> {
+                if (_state.value.screenStack.size > 1) {
+                    _state.update {
+                        val newStack = it.screenStack.toMutableList().apply { removeLast() }
+                        it.copy(screenStack = newStack)
+                    }
+                }
             }
             is AdminHomeEvent.LocationPermissionUpdated -> {
                 _state.update { it.copy(hasLocationPermission = event.isGranted) }
