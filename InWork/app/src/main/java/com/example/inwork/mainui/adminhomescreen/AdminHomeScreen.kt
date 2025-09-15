@@ -1,5 +1,13 @@
 package com.example.inwork.mainui.adminhomescreen.ui
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,13 +21,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.AdminBottomAppBar
 import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
+import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import kotlinx.coroutines.launch
 
 // Sealed class to represent the different content states of the admin screen
@@ -32,17 +47,91 @@ sealed class AdminScreen(val title: String) {
 
 @Composable
 fun AdminHomeScreen(navController: NavController) {
-    // State for controlling the drawer (open/closed)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
-    // State to manage the currently selected screen/content
     var currentScreen by remember { mutableStateOf<AdminScreen>(AdminScreen.Home) }
+    val context = LocalContext.current
+
+    // --- Start of Banner Logic ---
+
+    // State to track if location permission is granted
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Observe lifecycle events to refresh permission status on resume
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasLocationPermission = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // Launcher for background location permission
+    val backgroundLocationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                hasLocationPermission = true
+            }
+        }
+    )
+
+    // Launcher for foreground location permission
+    val foregroundLocationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                hasLocationPermission = true
+                // Now that we have foreground permission, we can request background permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                }
+            }
+        }
+    )
+
+
+    // --- End of Banner Logic ---
+
+
+    // Launcher for notification permission
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            // You can handle the result here if needed
+        }
+    )
+
+    // Request notification permission when the screen is first displayed
+    LaunchedEffect(key1 = true) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permissionStatus = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+            if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // Provide the AdminSideBar as the drawer's content
             ModalDrawerSheet {
                 AdminSideBar(
                     companyName = "Apple",
@@ -53,14 +142,11 @@ fun AdminHomeScreen(navController: NavController) {
     ) {
         Scaffold(
             topBar = {
-                // Open the drawer when the menu icon is clicked
                 InWorkTopAppBar(
-                    title = currentScreen.title, // Title is now dynamic
+                    title = currentScreen.title,
                     onNavigationIconClick = {
                         scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
-                            }
+                            drawerState.apply { if (isClosed) open() else close() }
                         }
                     }
                 )
@@ -68,9 +154,7 @@ fun AdminHomeScreen(navController: NavController) {
             bottomBar = {
                 AdminBottomAppBar(
                     currentScreen = currentScreen,
-                    onScreenSelected = { newScreen ->
-                        currentScreen = newScreen
-                    }
+                    onScreenSelected = { newScreen -> currentScreen = newScreen }
                 )
             },
             floatingActionButton = {
@@ -91,43 +175,59 @@ fun AdminHomeScreen(navController: NavController) {
             },
             floatingActionButtonPosition = FabPosition.Center,
         ) { innerPadding ->
-            // Conditionally display content based on the currentScreen state
-            when (currentScreen) {
-                is AdminScreen.Home -> {
-                    Column(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                            .background(Color.White)
-                    ) {
-                        Text(
-                            text = "Admin Home Screen Content",
-                        )
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                // Show banner if permission is not granted
+                if (!hasLocationPermission) {
+                    LocationPermissionBanner(onBannerClick = {
+                        val hasForegroundPermission = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                        if (hasForegroundPermission) {
+                            // If we have foreground, request background
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            }
+                        } else {
+                            // If we don't have foreground, request it first
+                            foregroundLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
+                    })
+                }
+
+                // Conditionally display content based on the currentScreen state
+                when (currentScreen) {
+                    is AdminScreen.Home -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.White)
+                        ) {
+                            Text(text = "Admin Home Screen Content")
+                        }
                     }
-                }
-                is AdminScreen.AllMenu -> {
-                    AllMenuContent(modifier = Modifier.padding(innerPadding), navController = navController)
-                }
-                is AdminScreen.SentNotice -> {
-                    // Placeholder for Sent Notice Screen Content
-                    Column(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                            .background(Color.White)
-                    ) {
-                        Text(text = "Sent Notice Content")
+
+                    is AdminScreen.AllMenu -> {
+                        AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                     }
-                }
-                is AdminScreen.Notification -> {
-                    // Placeholder for Notification Screen Content
-                    Column(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                            .background(Color.White)
-                    ) {
-                        Text(text = "Notification Content")
+
+                    is AdminScreen.SentNotice -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.White)
+                        ) {
+                            Text(text = "Sent Notice Content")
+                        }
+                    }
+
+                    is AdminScreen.Notification -> {
+                        NotificationScreen()
                     }
                 }
             }

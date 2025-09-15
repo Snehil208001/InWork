@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -57,7 +58,15 @@ fun AdminBottomAppBar(
                 selected = currentScreen == AdminScreen.Home,
                 onClick = { onScreenSelected(AdminScreen.Home) },
                 icon = { Icon(Icons.Default.Home, contentDescription = "Home", modifier = Modifier.size(28.dp)) },
-                label = { Text("Home", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.Home) FontWeight.Bold else FontWeight.Normal) },
+                label = {
+                    Text(
+                        text = "Home",
+                        fontSize = 12.sp,
+                        fontWeight = if (currentScreen == AdminScreen.Home) FontWeight.Bold else FontWeight.Normal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
@@ -70,7 +79,15 @@ fun AdminBottomAppBar(
                 selected = currentScreen == AdminScreen.AllMenu,
                 onClick = { onScreenSelected(AdminScreen.AllMenu) },
                 icon = { Icon(Icons.Default.Apps, contentDescription = "All Menu", modifier = Modifier.size(28.dp)) },
-                label = { Text("All Menu", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.AllMenu) FontWeight.Bold else FontWeight.Normal) },
+                label = {
+                    Text(
+                        text = "All Menu",
+                        fontSize = 12.sp,
+                        fontWeight = if (currentScreen == AdminScreen.AllMenu) FontWeight.Bold else FontWeight.Normal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
@@ -86,7 +103,15 @@ fun AdminBottomAppBar(
                 selected = currentScreen == AdminScreen.SentNotice,
                 onClick = { onScreenSelected(AdminScreen.SentNotice) },
                 icon = { Icon(Icons.Default.Article, contentDescription = "Sent Notice", modifier = Modifier.size(28.dp)) },
-                label = { Text("Sent Notice", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.SentNotice) FontWeight.Bold else FontWeight.Normal) },
+                label = {
+                    Text(
+                        text = "Sent Notice",
+                        fontSize = 12.sp,
+                        fontWeight = if (currentScreen == AdminScreen.SentNotice) FontWeight.Bold else FontWeight.Normal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
@@ -99,7 +124,15 @@ fun AdminBottomAppBar(
                 selected = currentScreen == AdminScreen.Notification,
                 onClick = { onScreenSelected(AdminScreen.Notification) },
                 icon = { Icon(Icons.Default.Notifications, contentDescription = "Notification", modifier = Modifier.size(28.dp)) },
-                label = { Text("Notification", fontSize = 12.sp, fontWeight = if (currentScreen == AdminScreen.Notification) FontWeight.Bold else FontWeight.Normal) },
+                label = {
+                    Text(
+                        text = "Notification",
+                        fontSize = 12.sp,
+                        fontWeight = if (currentScreen == AdminScreen.Notification) FontWeight.Bold else FontWeight.Normal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.Black,
                     unselectedIconColor = unselectedColor,
