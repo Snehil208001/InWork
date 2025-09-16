@@ -20,8 +20,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // ✅ This loads the API key from local.properties
-        manifestPlaceholders["MAPS_API_KEY"] =
-            project.findProperty("MAPS_API_KEY") as String? ?: ""
+        manifestPlaceholders["AIzaSyBHxR1SKv5GpYGcixvLPifItUuO-zk476k"] =
+            project.findProperty("AIzaSyBHxR1SKv5GpYGcixvLPifItUuO-zk476k") as String? ?: ""
     }
 
     buildTypes {

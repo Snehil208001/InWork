@@ -13,9 +13,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             InWorkTheme {
-               MyAppNav()
+                MyAppNav()
             }
         }
     }
 }
-

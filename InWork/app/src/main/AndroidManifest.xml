@@ -17,10 +17,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InWork">
 
-        <!-- ✅ Safe API key injection -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
+            android:value="AIzaSyBHxR1SKv5GpYGcixvLPifItUuO-zk476k" />
 
         <activity
             android:name=".MainActivity"

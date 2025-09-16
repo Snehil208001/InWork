@@ -4,22 +4,24 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import androidx.compose.runtime.mutableStateOf
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // Represents the state of the AddGeoScreen
 data class AddGeoState(
+    val isLoading: Boolean = true, // To show a loading indicator
+    val errorMessage: String? = null, // To show error messages
     val currentLocation: Location? = null,
     val cameraPositionState: CameraPositionState = CameraPositionState(
         position = CameraPosition.fromLatLngZoom(LatLng(25.5941, 85.1376), 10f)
@@ -32,7 +34,9 @@ sealed class AddGeoEvent {
     data class GetLastKnownLocation(val context: Context) : AddGeoEvent()
 }
 
-class AddGeoViewModel : ViewModel() {
+// ✅ Add Hilt annotations for proper dependency injection
+@HiltViewModel
+class AddGeoViewModel @Inject constructor() : ViewModel() {
 
     private val _state = MutableStateFlow(AddGeoState())
     val state: StateFlow<AddGeoState> = _state.asStateFlow()
@@ -40,9 +44,8 @@ class AddGeoViewModel : ViewModel() {
     fun onEvent(event: AddGeoEvent) {
         when (event) {
             is AddGeoEvent.PermissionResult -> {
-                if (event.isGranted) {
-                    // Permission is granted, you can now get the location.
-                    // However, we will get the location on launch of the screen.
+                if (!event.isGranted) {
+                    _state.update { it.copy(errorMessage = "Location permission denied.") }
                 }
             }
             is AddGeoEvent.GetLastKnownLocation -> {
@@ -53,20 +56,36 @@ class AddGeoViewModel : ViewModel() {
 
     private fun getLastKnownLocation(context: Context) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            _state.update { it.copy(isLoading = true) }
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
             fusedLocationClient.lastLocation
                 .addOnSuccessListener { location: Location? ->
-                    location?.let {
-                        val newLatLng = LatLng(it.latitude, it.longitude)
+                    if (location != null) {
+                        val newLatLng = LatLng(location.latitude, location.longitude)
                         _state.update { currentState ->
                             currentState.copy(
-                                currentLocation = it,
+                                isLoading = false,
+                                currentLocation = location,
                                 cameraPositionState = CameraPositionState(
                                     position = CameraPosition.fromLatLngZoom(newLatLng, 15f)
                                 )
                             )
                         }
+                    } else {
+                        // Handle case where location is null (e.g., GPS is off)
+                        _state.update { it.copy(isLoading = false, errorMessage = "Could not retrieve location. Please ensure GPS is enabled.") }
                     }
+                }
+                // ✅ ADD THIS FAILURE LISTENER
+                .addOnFailureListener { e ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Failed to get location: ${e.message}"
+                        )
+                    }
+                    Log.e("AddGeoViewModel", "Location fetch failed", e)
                 }
         }
     }
