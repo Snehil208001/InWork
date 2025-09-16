@@ -98,5 +98,9 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     // Add this line for hiltViewModel()
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-}
 
+    // Google Maps for Compose
+    implementation("com.google.maps.android:maps-compose:4.3.3")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+}

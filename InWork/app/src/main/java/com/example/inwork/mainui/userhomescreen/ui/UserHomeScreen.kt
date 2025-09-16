@@ -38,6 +38,7 @@ import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.core.utils.navigationbar.UserBottomAppBar
 import com.example.inwork.core.utils.navigationbar.UserSideBar
+import com.example.inwork.mainui.geoscreen.ui.AddGeoScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeEvent
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeViewModel
@@ -215,9 +216,7 @@ fun UserHomeScreen(
                         }
                     }
                     is UserScreen.AddGeo -> {
-                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-                            Text(text = "Add Geofence Screen Content")
-                        }
+                        AddGeoScreen()
                     }
                     is UserScreen.Notices -> {
                         Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
