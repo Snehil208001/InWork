@@ -2,8 +2,10 @@ package com.example.inwork.mainui.userhomescreen.ui
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Build
 import android.speech.RecognizerIntent
 import androidx.activity.compose.BackHandler
@@ -11,11 +13,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
@@ -38,10 +36,16 @@ import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.core.utils.navigationbar.UserBottomAppBar
 import com.example.inwork.core.utils.navigationbar.UserSideBar
-import com.example.inwork.mainui.geoscreen.ui.AddGeoScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeEvent
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeViewModel
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
 sealed class UserScreen(val title: String) {
@@ -216,7 +220,7 @@ fun UserHomeScreen(
                         }
                     }
                     is UserScreen.AddGeo -> {
-                        AddGeoScreen()
+                        AddGeoScreen(hasLocationPermission = state.hasLocationPermission)
                     }
                     is UserScreen.Notices -> {
                         Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
@@ -231,6 +235,54 @@ fun UserHomeScreen(
         }
     }
 }
+
+@Composable
+fun AddGeoScreen(hasLocationPermission: Boolean) {
+    val context = LocalContext.current
+    var currentLocation by remember { mutableStateOf<Location?>(null) }
+    val patna = LatLng(25.5941, 85.1376)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(patna, 10f)
+    }
+
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) {
+            getLastKnownLocation(context) { location ->
+                currentLocation = location
+                location?.let {
+                    val newLatLng = LatLng(it.latitude, it.longitude)
+                    cameraPositionState.position = CameraPosition.fromLatLngZoom(newLatLng, 15f)
+                }
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
+            uiSettings = MapUiSettings(myLocationButtonEnabled = hasLocationPermission)
+        )
+        if (currentLocation == null && hasLocationPermission) {
+            Text("Fetching current location...")
+        }
+    }
+}
+
+private fun getLastKnownLocation(context: Context, onLocationFetched: (Location?) -> Unit) {
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                onLocationFetched(location)
+            }
+            .addOnFailureListener {
+                onLocationFetched(null)
+            }
+    }
+}
+
 
 @Composable
 fun SosDialog(

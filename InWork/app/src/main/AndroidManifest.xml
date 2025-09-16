@@ -20,7 +20,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDbA9G6bINJsQ78-5Sq14XE529kmBJGDGc" />
+            android:value="AIzaSyBtpzw48p-hsV0JxwY03yU80Z4IY9Vf8Lw" />
 
         <activity
             android:name=".MainActivity"
@@ -30,7 +30,6 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

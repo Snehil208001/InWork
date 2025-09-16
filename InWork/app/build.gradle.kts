@@ -12,7 +12,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.splashscreen"
+        applicationId = "com.example.inwork"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
