@@ -109,8 +109,8 @@ fun UserHomeScreen(
         )
     }
 
-    BackHandler(enabled = state.screenStack.size > 1) {
-        viewModel.onEvent(UserHomeEvent.NavigateBack)
+    BackHandler(enabled = currentScreen != UserScreen.Home) {
+        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Home))
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -147,8 +147,13 @@ fun UserHomeScreen(
         }
     )
 
+    // Check if the current screen is AddGeo.
+    val isAddGeoScreen = currentScreen == UserScreen.AddGeo
+
     ModalNavigationDrawer(
         drawerState = drawerState,
+        // Disable the drag gesture for the navigation drawer on the map screen.
+        gesturesEnabled = !isAddGeoScreen,
         drawerContent = {
             ModalDrawerSheet {
                 UserSideBar(
