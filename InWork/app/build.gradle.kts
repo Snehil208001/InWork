@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
-
 }
 
 android {
@@ -19,6 +18,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // ✅ This loads the API key from local.properties
+        manifestPlaceholders["MAPS_API_KEY"] =
+            project.findProperty("MAPS_API_KEY") as String? ?: ""
     }
 
     buildTypes {
