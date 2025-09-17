@@ -13,14 +13,42 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -88,7 +116,7 @@ fun UserHomeScreen(
             onTextChange = { newText -> sosText = newText },
             onDismiss = { showSosDialog = false },
             onSend = { message ->
-                println("SOS Sent: $message") // Placeholder for send logic
+                println("SOS Sent: $message")
                 showSosDialog = false
             },
             onMicClick = {
@@ -102,15 +130,21 @@ fun UserHomeScreen(
                 try {
                     speechRecognizerLauncher.launch(intent)
                 } catch (e: Exception) {
-                    // Handle case where speech recognition is not supported
                     println("Speech recognition not supported: ${e.message}")
                 }
             }
         )
     }
 
-    BackHandler(enabled = currentScreen != UserScreen.Home) {
-        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Home))
+    // This BackHandler correctly closes the sidebar first.
+    BackHandler(enabled = drawerState.isOpen || currentScreen != UserScreen.Home) {
+        if (drawerState.isOpen) {
+            scope.launch {
+                drawerState.close()
+            }
+        } else {
+            viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Home))
+        }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -147,12 +181,11 @@ fun UserHomeScreen(
         }
     )
 
-    // Check if the current screen is AddGeo.
     val isAddGeoScreen = currentScreen == UserScreen.AddGeo
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        // Disable the drag gesture for the navigation drawer on the map screen.
+        // This disables the drag-to-open gesture ONLY on the map screen.
         gesturesEnabled = !isAddGeoScreen,
         drawerContent = {
             ModalDrawerSheet {
@@ -224,14 +257,26 @@ fun UserHomeScreen(
                             Text(text = "User Home Screen Content")
                         }
                     }
+
                     is UserScreen.AddGeo -> {
-                        AddGeoScreen(hasLocationPermission = state.hasLocationPermission)
+                        // We pass a function to the AddGeoScreen to tell it how to close the drawer.
+                        AddGeoScreen(
+                            hasLocationPermission = state.hasLocationPermission,
+                            isDrawerOpen = drawerState.isOpen,
+                            onCloseDrawer = {
+                                scope.launch {
+                                    drawerState.close()
+                                }
+                            }
+                        )
                     }
+
                     is UserScreen.Notices -> {
                         Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
                             Text(text = "Notices Screen Content")
                         }
                     }
+
                     is UserScreen.Notification -> {
                         NotificationScreen()
                     }
@@ -242,7 +287,11 @@ fun UserHomeScreen(
 }
 
 @Composable
-fun AddGeoScreen(hasLocationPermission: Boolean) {
+fun AddGeoScreen(
+    hasLocationPermission: Boolean,
+    isDrawerOpen: Boolean,
+    onCloseDrawer: () -> Unit // This function is called when the user clicks outside.
+) {
     val context = LocalContext.current
     var currentLocation by remember { mutableStateOf<Location?>(null) }
     val patna = LatLng(25.5941, 85.1376)
@@ -269,6 +318,22 @@ fun AddGeoScreen(hasLocationPermission: Boolean) {
             properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
             uiSettings = MapUiSettings(myLocationButtonEnabled = hasLocationPermission)
         )
+
+        // NEW: This transparent Box acts as an interceptor when the drawer is open.
+        if (isDrawerOpen) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent) // It's invisible.
+                    .pointerInput(Unit) {
+                        // It detects taps anywhere on the screen...
+                        detectTapGestures(
+                            onTap = { onCloseDrawer() } // ...and uses them to close the drawer.
+                        )
+                    }
+            )
+        }
+
         if (currentLocation == null && hasLocationPermission) {
             Text("Fetching current location...")
         }
@@ -276,7 +341,11 @@ fun AddGeoScreen(hasLocationPermission: Boolean) {
 }
 
 private fun getLastKnownLocation(context: Context, onLocationFetched: (Location?) -> Unit) {
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+    if (ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
