@@ -22,24 +22,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.AdminBottomAppBar
 import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
+import com.example.inwork.mainui.addemployeescreen.ui.AddEmployeeScreen
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
 import com.example.inwork.mainui.eventscreen.ui.AddEventScreen
-import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
+import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import kotlinx.coroutines.launch
+import com.example.inwork.core.utils.components.LocationPermissionBanner as PermissionBanner
 
 sealed class AdminScreen(val title: String) {
     object Home : AdminScreen("Home")
@@ -48,6 +47,7 @@ sealed class AdminScreen(val title: String) {
     object Notification : AdminScreen("Notifications")
     object CreateNotice : AdminScreen("Notice")
     object AddEvent : AdminScreen("Add Event")
+    object AddEmployee : AdminScreen("Add Employee")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -115,6 +115,10 @@ fun AdminHomeScreen(
                     onSendNoticeClick = {
                         viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked)
                         scope.launch { drawerState.close() }
+                    },
+                    onAddEmployeeClick = {
+                        viewModel.onEvent(AdminHomeEvent.AddEmployeeClicked)
+                        scope.launch { drawerState.close() }
                     }
                 )
             }
@@ -163,7 +167,7 @@ fun AdminHomeScreen(
                     .fillMaxSize()
             ) {
                 if (!state.hasLocationPermission) {
-                    LocationPermissionBanner(onBannerClick = {
+                    PermissionBanner(onBannerClick = {
                         val hasForeground = ContextCompat.checkSelfPermission(
                             context,
                             Manifest.permission.ACCESS_FINE_LOCATION
@@ -203,6 +207,13 @@ fun AdminHomeScreen(
                             println("Saving Event -> Date: $date, Event: $event")
                             viewModel.onEvent(AdminHomeEvent.NavigateBack)
                         }
+                    }
+                    is AdminScreen.AddEmployee -> {
+                        AddEmployeeScreen(
+                            onNavigateBack = {
+                                viewModel.onEvent(AdminHomeEvent.NavigateBack)
+                            }
+                        )
                     }
                     is AdminScreen.Notification -> {
                         NotificationScreen()

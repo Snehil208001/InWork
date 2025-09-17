@@ -32,10 +32,17 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEmployeeScreen(
+    onNavigateBack: () -> Unit,
     viewModel: AddEmployeeViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect {
+            onNavigateBack()
+        }
+    }
 
     // --- Date and Time Picker Dialogs ---
 
@@ -199,7 +206,6 @@ fun AddEmployeeScreen(
     }
 }
 
-// Reusable composable for standard text fields
 @Composable
 fun FormInputField(
     value: String,
@@ -228,7 +234,6 @@ fun FormInputField(
     }
 }
 
-// Reusable composable for fields with a clickable trailing icon
 @Composable
 fun IconInputField(
     value: String,
@@ -276,7 +281,6 @@ fun IconInputField(
     }
 }
 
-// Helper function to show the Time Picker
 @Composable
 private fun ShowTimePicker(
     context: android.content.Context,
@@ -301,7 +305,6 @@ private fun ShowTimePicker(
     }
 }
 
-// Extension function to format Milliseconds to a Date String
 private fun Long.toFormattedDate(): String {
     val date = Date(this)
     val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -340,5 +343,5 @@ fun OfficeSelectionDialog(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AddEmployeeScreenPreview() {
-    AddEmployeeScreen()
+    AddEmployeeScreen(onNavigateBack = {})
 }
