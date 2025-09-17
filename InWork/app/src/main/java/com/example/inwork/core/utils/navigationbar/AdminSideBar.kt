@@ -2,34 +2,11 @@ package com.example.inwork.core.utils.navigationbar
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationCity
-import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +25,8 @@ fun AdminSideBar(
     companyName: String,
     email: String,
     onAddEventClick: () -> Unit,
-    onSendNoticeClick: () -> Unit
+    onSendNoticeClick: () -> Unit,
+    onAddEmployeeClick: () -> Unit // Added this parameter
 ) {
     Column(
         modifier = Modifier
@@ -106,7 +84,8 @@ fun AdminSideBar(
                 NavigationMenuItem(icon = Icons.Default.CalendarToday, text = "Leave Requests")
                 NavigationMenuItem(icon = Icons.Default.Assessment, text = "Monthly Reports")
                 NavigationMenuItem(icon = Icons.Default.Send, text = "Send Notice", onClick = onSendNoticeClick)
-                NavigationMenuItem(icon = Icons.Default.PersonAdd, text = "Add Employee")
+                // Updated this item to be clickable
+                NavigationMenuItem(icon = Icons.Default.PersonAdd, text = "Add Employee", onClick = onAddEmployeeClick)
                 NavigationMenuItem(icon = Icons.Default.Business, text = "Add Offices")
                 NavigationMenuItem(icon = Icons.Default.LocationCity, text = "All Offices")
                 NavigationMenuItem(icon = Icons.Default.Dashboard, text = "Dashboard")

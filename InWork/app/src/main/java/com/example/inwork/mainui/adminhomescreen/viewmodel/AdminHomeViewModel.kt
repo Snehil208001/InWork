@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+// Added AddEmployee screen state
 data class AdminHomeState(
     val screenStack: List<AdminScreen> = listOf(AdminScreen.Home),
     val hasLocationPermission: Boolean = false
@@ -25,6 +26,7 @@ sealed class AdminHomeEvent {
     data class CheckLocationPermission(val context: Context) : AdminHomeEvent()
     object CreateNoticeClicked : AdminHomeEvent()
     object AddEventClicked : AdminHomeEvent()
+    object AddEmployeeClicked : AdminHomeEvent() // Added this event
     object NavigateBack : AdminHomeEvent()
 }
 
@@ -47,6 +49,13 @@ class AdminHomeViewModel : ViewModel() {
             is AdminHomeEvent.AddEventClicked -> {
                 _state.update {
                     val newStack = it.screenStack.toMutableList().apply { add(AdminScreen.AddEvent) }
+                    it.copy(screenStack = newStack)
+                }
+            }
+            // Handling the new click event
+            is AdminHomeEvent.AddEmployeeClicked -> {
+                _state.update {
+                    val newStack = it.screenStack.toMutableList().apply { add(AdminScreen.AddEmployee) }
                     it.copy(screenStack = newStack)
                 }
             }
