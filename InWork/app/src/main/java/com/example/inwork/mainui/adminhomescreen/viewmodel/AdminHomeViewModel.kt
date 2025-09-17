@@ -3,6 +3,8 @@ package com.example.inwork.mainui.adminhomescreen.viewmodel
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import com.example.inwork.mainui.adminhomescreen.ui.AdminScreen
@@ -26,7 +28,8 @@ sealed class AdminHomeEvent {
     data class CheckLocationPermission(val context: Context) : AdminHomeEvent()
     object CreateNoticeClicked : AdminHomeEvent()
     object AddEventClicked : AdminHomeEvent()
-    object AddEmployeeClicked : AdminHomeEvent() // Added this event
+    object AddEmployeeClicked : AdminHomeEvent()
+    object AddOfficesClicked : AdminHomeEvent()
     object NavigateBack : AdminHomeEvent()
 }
 
@@ -35,10 +38,15 @@ class AdminHomeViewModel : ViewModel() {
     private val _state = MutableStateFlow(AdminHomeState())
     val state: StateFlow<AdminHomeState> = _state.asStateFlow()
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun onEvent(event: AdminHomeEvent) {
         when (event) {
             is AdminHomeEvent.ScreenSelected -> {
-                _state.update { it.copy(screenStack = listOf(event.screen)) }
+                // When selecting from the bottom bar, it's a primary navigation action,
+                // so we reset the stack to that screen.
+                if (_state.value.currentScreen != event.screen) {
+                    _state.update { it.copy(screenStack = listOf(event.screen)) }
+                }
             }
             is AdminHomeEvent.CreateNoticeClicked -> {
                 _state.update {
@@ -52,10 +60,15 @@ class AdminHomeViewModel : ViewModel() {
                     it.copy(screenStack = newStack)
                 }
             }
-            // Handling the new click event
             is AdminHomeEvent.AddEmployeeClicked -> {
                 _state.update {
                     val newStack = it.screenStack.toMutableList().apply { add(AdminScreen.AddEmployee) }
+                    it.copy(screenStack = newStack)
+                }
+            }
+            is AdminHomeEvent.AddOfficesClicked -> {
+                _state.update {
+                    val newStack = it.screenStack.toMutableList().apply { add(AdminScreen.AddOffice) }
                     it.copy(screenStack = newStack)
                 }
             }

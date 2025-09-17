@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.mainui.addofficescreen.ui.AddOfficeScreen
 import com.example.inwork.mainui.addofficescreen.ui.OfficeLocationPickerScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AllMenuContent
@@ -56,6 +57,8 @@ fun MyAppNav(
         composable(Screen.OfficeLocationPicker.route) {
             OfficeLocationPickerScreen(navController = navController)
         }
-
+        composable(Screen.AddOffice.route) {
+            AddOfficeScreen(navController = navController)
+        }
     }
 }

@@ -24,9 +24,17 @@ import com.example.inwork.R
 fun AdminSideBar(
     companyName: String,
     email: String,
+    onHomeClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    onAllEmployeesClick: () -> Unit,
+    onSentNoticesClick: () -> Unit,
     onAddEventClick: () -> Unit,
-    onSendNoticeClick: () -> Unit,
-    onAddEmployeeClick: () -> Unit // Added this parameter
+    onAddEmployeeClick: () -> Unit,
+    onAddOfficesClick: () -> Unit,
+    onAllOfficesClick: () -> Unit,
+    onDashboardClick: () -> Unit,
+    onLogoutClick: () -> Unit,
+    onDeleteAccountClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -71,27 +79,34 @@ fun AdminSideBar(
                 .background(Color(0xFFE8F5E9))
         ) {
             item {
-                NavigationMenuItem(icon = Icons.Default.Home, text = "Home")
-                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile")
-                NavigationMenuItem(icon = Icons.Default.Groups, text = "All Employees")
-                NavigationMenuItem(icon = Icons.Default.Send, text = "Sent Notices")
+                NavigationMenuItem(icon = Icons.Default.Home, text = "Home", onClick = onHomeClick)
+                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile", onClick = onProfileClick)
+                NavigationMenuItem(icon = Icons.Default.Groups, text = "All Employees", onClick = onAllEmployeesClick)
+                NavigationMenuItem(icon = Icons.Default.Send, text = "Sent Notices", onClick = onSentNoticesClick)
                 NavigationMenuItem(icon = Icons.Default.Event, text = "Add Event", onClick = onAddEventClick)
             }
 
             item { NavigationHeader(text = "Manage Employees") }
             item {
+                // Other menu items without explicit click handlers for now
                 NavigationMenuItem(icon = Icons.Default.Work, text = "Employee Status")
                 NavigationMenuItem(icon = Icons.Default.CalendarToday, text = "Leave Requests")
                 NavigationMenuItem(icon = Icons.Default.Assessment, text = "Monthly Reports")
-                NavigationMenuItem(icon = Icons.Default.Send, text = "Send Notice", onClick = onSendNoticeClick)
-                // Updated this item to be clickable
+                NavigationMenuItem(icon = Icons.Default.Send, text = "Send Notice", onClick = onSentNoticesClick)
                 NavigationMenuItem(icon = Icons.Default.PersonAdd, text = "Add Employee", onClick = onAddEmployeeClick)
-                NavigationMenuItem(icon = Icons.Default.Business, text = "Add Offices")
-                NavigationMenuItem(icon = Icons.Default.LocationCity, text = "All Offices")
-                NavigationMenuItem(icon = Icons.Default.Dashboard, text = "Dashboard")
+                NavigationMenuItem(icon = Icons.Default.Business, text = "Add Offices", onClick = onAddOfficesClick)
+                NavigationMenuItem(icon = Icons.Default.LocationCity, text = "All Offices", onClick = onAllOfficesClick)
+                NavigationMenuItem(icon = Icons.Default.Dashboard, text = "Dashboard", onClick = onDashboardClick)
                 NavigationMenuItem(icon = Icons.Default.Smartphone, text = "Screen Time Details")
                 NavigationMenuItem(icon = Icons.Default.Newspaper, text = "Memes, Jokes and News")
                 NavigationMenuItem(icon = Icons.Default.WbSunny, text = "Check Weather")
+            }
+            item { NavigationHeader(text = "Log Out") }
+            item {
+                NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us")
+                NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings")
+                NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout", onClick = onLogoutClick)
+                NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account", onClick = onDeleteAccountClick)
             }
         }
     }

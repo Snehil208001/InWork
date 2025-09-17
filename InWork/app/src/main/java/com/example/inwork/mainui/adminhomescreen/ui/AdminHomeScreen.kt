@@ -28,10 +28,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.inwork.core.navigation.Screen
 import com.example.inwork.core.utils.navigationbar.AdminBottomAppBar
 import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.mainui.addemployeescreen.ui.AddEmployeeScreen
+import com.example.inwork.mainui.addofficescreen.ui.AddOfficeScreen
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
 import com.example.inwork.mainui.eventscreen.ui.AddEventScreen
@@ -48,9 +50,12 @@ sealed class AdminScreen(val title: String) {
     object CreateNotice : AdminScreen("Notice")
     object AddEvent : AdminScreen("Add Event")
     object AddEmployee : AdminScreen("Add Employee")
+    object AddOffice : AdminScreen("Add Office")
+    object AllOffices : AdminScreen("All Offices")
+    object Dashboard : AdminScreen("Dashboard")
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminHomeScreen(
@@ -108,18 +113,38 @@ fun AdminHomeScreen(
                 AdminSideBar(
                     companyName = "Apple",
                     email = "soumadeepbarik@gmail.com",
-                    onAddEventClick = {
-                        viewModel.onEvent(AdminHomeEvent.AddEventClicked)
+                    onHomeClick = {
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Home))
                         scope.launch { drawerState.close() }
                     },
-                    onSendNoticeClick = {
-                        viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked)
+                    onProfileClick = { /* TODO */ },
+                    onAllEmployeesClick = { /* TODO */ },
+                    onSentNoticesClick = {
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.SentNotice))
+                        scope.launch { drawerState.close() }
+                    },
+                    onAddEventClick = {
+                        viewModel.onEvent(AdminHomeEvent.AddEventClicked)
                         scope.launch { drawerState.close() }
                     },
                     onAddEmployeeClick = {
                         viewModel.onEvent(AdminHomeEvent.AddEmployeeClicked)
                         scope.launch { drawerState.close() }
-                    }
+                    },
+                    onAddOfficesClick = {
+                        viewModel.onEvent(AdminHomeEvent.AddOfficesClicked)
+                        scope.launch { drawerState.close() }
+                    },
+                    onAllOfficesClick = {
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.AllOffices))
+                        scope.launch { drawerState.close() }
+                    },
+                    onDashboardClick = {
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Dashboard))
+                        scope.launch { drawerState.close() }
+                    },
+                    onLogoutClick = { /* TODO: Implement Logout */ },
+                    onDeleteAccountClick = { /* TODO: Implement Delete Account */ }
                 )
             }
         }
@@ -214,6 +239,19 @@ fun AdminHomeScreen(
                                 viewModel.onEvent(AdminHomeEvent.NavigateBack)
                             }
                         )
+                    }
+                    is AdminScreen.AddOffice -> {
+                        AddOfficeScreen(navController = navController)
+                    }
+                    is AdminScreen.AllOffices -> {
+                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                            Text(text = "All Offices Screen Content")
+                        }
+                    }
+                    is AdminScreen.Dashboard -> {
+                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                            Text(text = "Dashboard Screen Content")
+                        }
                     }
                     is AdminScreen.Notification -> {
                         NotificationScreen()
