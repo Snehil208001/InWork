@@ -31,4 +31,9 @@ sealed class Screen(val route: String) {
 
     data object AllMenu : Screen("all_menu")
 
+    data object OfficeLocationPicker : Screen("OfficeLocationPicker")
+
+    data object AddOffice : Screen("AddOffice")
+
+
 }

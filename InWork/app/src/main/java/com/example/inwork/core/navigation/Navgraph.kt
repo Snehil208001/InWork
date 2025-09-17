@@ -1,11 +1,14 @@
 package com.example.inwork.core.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.mainui.addofficescreen.ui.OfficeLocationPickerScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AllMenuContent
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
@@ -15,6 +18,7 @@ import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
 import com.example.inwork.mainui.userhomescreen.ui.UserHomeScreen
 
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
 fun MyAppNav(
     modifier: Modifier = Modifier,
@@ -49,5 +53,9 @@ fun MyAppNav(
         composable(Screen.AllMenu.route) { // Use Screen.AllMenu.route
             AllMenuContent(navController = navController)
         }
+        composable(Screen.OfficeLocationPicker.route) {
+            OfficeLocationPickerScreen(navController = navController)
+        }
+
     }
 }
