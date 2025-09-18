@@ -30,7 +30,8 @@ fun UserSideBar(
     email: String,
     onAddGeoClick: () -> Unit,
     onPostLeaveClick: () -> Unit,
-    onCheckEventClick: () -> Unit
+    onCheckEventClick: () -> Unit,
+    onSettingsClick: () -> Unit // ADDED: New parameter for Settings click
 ) {
     Column(
         modifier = Modifier
@@ -97,7 +98,8 @@ fun UserSideBar(
             item { NavigationHeader(text = "Log Out") }
             item {
                 NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us")
-                NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings")
+                // MODIFIED: Pass the onSettingsClick lambda to the NavigationMenuItem
+                NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings", onClick = onSettingsClick)
                 NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout")
                 NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account")
             }
@@ -146,6 +148,7 @@ fun UserSideBarPreview() {
         email = "soumadeepbarik2001@gmail.com",
         onAddGeoClick = {},
         onPostLeaveClick = {},
-        onCheckEventClick = {}
+        onCheckEventClick = {},
+        onSettingsClick = {} // ADDED: Pass a placeholder lambda for the preview
     )
 }

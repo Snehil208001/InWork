@@ -35,5 +35,7 @@ sealed class Screen(val route: String) {
 
     data object AddOffice : Screen("AddOffice")
 
+    object GrantPermissionsScreen: Screen("grant_permissions_screen")
+
 
 }

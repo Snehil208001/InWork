@@ -14,6 +14,7 @@ import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AllMenuContent
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
 import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
+import com.example.inwork.mainui.permissionscreen.ui.GrantPermissionsScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
 import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
@@ -60,5 +61,26 @@ fun MyAppNav(
         composable(Screen.AddOffice.route) {
             AddOfficeScreen(navController = navController)
         }
+        composable(route = Screen.GrantPermissionsScreen.route) {
+            GrantPermissionsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onGrantLocation = {
+                    // Logic to request LOCATION permission
+                },
+                onGrantBackgroundLocation = {
+                    // Logic to request BACKGROUND LOCATION permission
+                },
+                onGrantScreentime = {
+                    // Logic to request SCREENTIME permission
+                },
+                onGrantPhone = {
+                    // Logic to request PHONE permission
+                },
+                onGrantNotifications = {
+                    // Logic to request NOTIFICATIONS permission
+                }
+            )
+        }
     }
+
 }

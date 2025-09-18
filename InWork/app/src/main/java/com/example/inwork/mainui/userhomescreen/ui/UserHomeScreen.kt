@@ -77,6 +77,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 import com.example.inwork.mainui.eventscreen.ui.CheckEventScreen
+import com.example.inwork.core.navigation.Screen // Import the Screen sealed class
 
 sealed class UserScreen(val title: String) {
     object Home : UserScreen("Home")
@@ -204,6 +205,10 @@ fun UserHomeScreen(
                     },
                     onCheckEventClick = {
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.CheckEvent))
+                        scope.launch { drawerState.close() }
+                    },
+                    onSettingsClick = { // ADDED: New settings click handler
+                        navController.navigate(Screen.GrantPermissionsScreen.route)
                         scope.launch { drawerState.close() }
                     }
                 )
