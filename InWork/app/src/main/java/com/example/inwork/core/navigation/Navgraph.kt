@@ -63,7 +63,7 @@ fun MyAppNav(
         }
         composable(route = Screen.GrantPermissionsScreen.route) {
             GrantPermissionsScreen(
-                onNavigateBack = { navController.popBackStack() },
+
                 onGrantLocation = {
                     // Logic to request LOCATION permission
                 },

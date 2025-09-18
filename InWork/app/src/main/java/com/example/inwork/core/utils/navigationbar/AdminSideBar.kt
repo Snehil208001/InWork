@@ -34,7 +34,8 @@ fun AdminSideBar(
     onAllOfficesClick: () -> Unit,
     onDashboardClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onDeleteAccountClick: () -> Unit
+    onDeleteAccountClick: () -> Unit,
+    onContactUsClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -88,7 +89,6 @@ fun AdminSideBar(
 
             item { NavigationHeader(text = "Manage Employees") }
             item {
-                // Other menu items without explicit click handlers for now
                 NavigationMenuItem(icon = Icons.Default.Work, text = "Employee Status")
                 NavigationMenuItem(icon = Icons.Default.CalendarToday, text = "Leave Requests")
                 NavigationMenuItem(icon = Icons.Default.Assessment, text = "Monthly Reports")
@@ -103,7 +103,7 @@ fun AdminSideBar(
             }
             item { NavigationHeader(text = "Log Out") }
             item {
-                NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us")
+                NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us", onClick = onContactUsClick)
                 NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings")
                 NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout", onClick = onLogoutClick)
                 NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account", onClick = onDeleteAccountClick)

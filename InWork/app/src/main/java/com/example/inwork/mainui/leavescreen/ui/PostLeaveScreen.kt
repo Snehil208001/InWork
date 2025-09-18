@@ -1,23 +1,32 @@
 package com.example.inwork.mainui.leavescreen.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -32,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.inwork.mainui.addemployeescreen.ui.IconInputField
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -55,7 +63,6 @@ fun PostLeaveScreen(
     var showFromDatePicker by remember { mutableStateOf(false) }
     var showToDatePicker by remember { mutableStateOf(false) }
 
-    // Date picker dialogs
     if (showFromDatePicker) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -89,40 +96,43 @@ fun PostLeaveScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(16.dp)
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
         FormInputField(
             value = designation,
             onValueChange = { designation = it; isDesignationError = it.isBlank() },
             label = "Designation",
             isError = isDesignationError
         )
-        IconInputField(
+
+        // CHANGED: The "From" date field is now a Row with the text field and icon button
+        DateFieldWithIcon(
             value = fromDate,
-            onValueChange = {},
-            label = "From (YYYY-MM-DD)",
-            icon = Icons.Default.CalendarToday,
+            label = "From(YYYY-MM-DD)",
             isError = isFromDateError,
             onIconClick = { showFromDatePicker = true }
         )
-        IconInputField(
+
+        // CHANGED: The "To" date field is also a Row with the text field and icon button
+        DateFieldWithIcon(
             value = toDate,
-            onValueChange = {},
-            label = "To (YYYY-MM-DD)",
-            icon = Icons.Default.CalendarToday,
+            label = "To(YYYY-MM-DD)",
             isError = isToDateError,
             onIconClick = { showToDatePicker = true }
         )
+
         FormInputField(
             value = leaveReason,
             onValueChange = { leaveReason = it; isReasonError = it.isBlank() },
             label = "Leave Reason",
             isError = isReasonError
         )
+
         Spacer(modifier = Modifier.weight(1f))
+
         Button(
             onClick = {
                 isDesignationError = designation.isBlank()
@@ -135,10 +145,10 @@ fun PostLeaveScreen(
                 }
             },
             modifier = Modifier
-                .fillMaxWidth(0.9f)
+                .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(25.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF009B4D))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
         ) {
             Text("POST LEAVE", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
         }
@@ -146,7 +156,61 @@ fun PostLeaveScreen(
     }
 }
 
-// Reusing FormInputField for consistency
+// NEW COMPOSABLE: A Row that holds the date field and the external icon button
+@Composable
+fun DateFieldWithIcon(
+    value: String,
+    label: String,
+    isError: Boolean,
+    onIconClick: () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = {},
+                label = { Text(label) },
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onIconClick() },
+                shape = RoundedCornerShape(8.dp),
+                readOnly = true,
+                isError = isError,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.LightGray,
+                    unfocusedBorderColor = Color.LightGray
+                )
+            )
+            IconButton(
+                onClick = onIconClick,
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(Color(0xFF00ACC1), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = "Select Date",
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+        }
+        if (isError) {
+            Text(
+                text = "Required",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+// Reusing FormInputField for other fields
 @Composable
 fun FormInputField(
     value: String,
@@ -154,7 +218,7 @@ fun FormInputField(
     label: String,
     isError: Boolean
 ) {
-    Column(modifier = Modifier.padding(bottom = 8.dp)) {
+    Column(modifier = Modifier.padding(bottom = 4.dp)) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -162,7 +226,11 @@ fun FormInputField(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             isError = isError,
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.LightGray,
+                unfocusedBorderColor = Color.LightGray
+            )
         )
         if (isError) {
             Text(
@@ -175,13 +243,11 @@ fun FormInputField(
     }
 }
 
-
 private fun Long.toFormattedDate(): String {
     val date = Date(this)
     val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return format.format(date)
 }
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

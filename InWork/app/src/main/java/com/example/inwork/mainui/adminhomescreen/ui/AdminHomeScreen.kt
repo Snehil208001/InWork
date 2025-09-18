@@ -37,6 +37,7 @@ import com.example.inwork.mainui.addofficescreen.ui.AddOfficeScreen
 import com.example.inwork.mainui.admineventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
+import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import kotlinx.coroutines.launch
@@ -53,6 +54,7 @@ sealed class AdminScreen(val title: String) {
     object AddOffice : AdminScreen("Add Office")
     object AllOffices : AdminScreen("All Offices")
     object Dashboard : AdminScreen("Dashboard")
+    object ContactUs : AdminScreen("Contact Us")
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -144,7 +146,11 @@ fun AdminHomeScreen(
                         scope.launch { drawerState.close() }
                     },
                     onLogoutClick = { /* TODO: Implement Logout */ },
-                    onDeleteAccountClick = { /* TODO: Implement Delete Account */ }
+                    onDeleteAccountClick = { /* TODO: Implement Delete Account */ },
+                    onContactUsClick = {
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.ContactUs))
+                        scope.launch { drawerState.close() }
+                    }
                 )
             }
         }
@@ -229,9 +235,7 @@ fun AdminHomeScreen(
                     }
                     is AdminScreen.AddEvent -> {
                         AddEventScreen(
-                            onNavigateBack = {
-                                viewModel.onEvent(AdminHomeEvent.NavigateBack)
-                            }
+                            navController = navController
                         )
                     }
                     is AdminScreen.AddEmployee -> {
@@ -256,6 +260,9 @@ fun AdminHomeScreen(
                     }
                     is AdminScreen.Notification -> {
                         NotificationScreen()
+                    }
+                    is AdminScreen.ContactUs -> {
+                        ContactUsContent()
                     }
                 }
             }

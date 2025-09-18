@@ -14,38 +14,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -60,10 +34,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.core.navigation.Screen
 import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.core.utils.navigationbar.UserBottomAppBar
 import com.example.inwork.core.utils.navigationbar.UserSideBar
+import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
+import com.example.inwork.mainui.eventscreen.ui.CheckEventScreen
 import com.example.inwork.mainui.leavescreen.ui.PostLeaveScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeEvent
@@ -76,8 +53,6 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
-import com.example.inwork.mainui.eventscreen.ui.CheckEventScreen
-import com.example.inwork.core.navigation.Screen // Import the Screen sealed class
 
 sealed class UserScreen(val title: String) {
     object Home : UserScreen("Home")
@@ -86,6 +61,7 @@ sealed class UserScreen(val title: String) {
     object Notification : UserScreen("Notifications")
     object PostLeave : UserScreen("Post Leave")
     object CheckEvent : UserScreen("Check Event")
+    object ContactUs : UserScreen("Contact Us") // ADDED: New screen state
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -207,8 +183,13 @@ fun UserHomeScreen(
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.CheckEvent))
                         scope.launch { drawerState.close() }
                     },
-                    onSettingsClick = { // ADDED: New settings click handler
+                    onSettingsClick = {
                         navController.navigate(Screen.GrantPermissionsScreen.route)
+                        scope.launch { drawerState.close() }
+                    },
+                    // ADDED: Pass the click handler for Contact Us
+                    onContactUsClick = {
+                        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.ContactUs))
                         scope.launch { drawerState.close() }
                     }
                 )
@@ -307,6 +288,10 @@ fun UserHomeScreen(
                     is UserScreen.CheckEvent -> {
                         CheckEventScreen()
                     }
+                    // ADDED: Case to display the Contact Us screen
+                    is UserScreen.ContactUs -> {
+                        ContactUsContent()
+                    }
                 }
             }
         }
@@ -381,7 +366,6 @@ private fun getLastKnownLocation(context: Context, onLocationFetched: (Location?
             }
     }
 }
-
 
 @Composable
 fun SosDialog(
