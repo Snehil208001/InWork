@@ -27,7 +27,10 @@ import com.example.inwork.R
 @Composable
 fun UserSideBar(
     userName: String,
-    email: String
+    email: String,
+    onAddGeoClick: () -> Unit,
+    onPostLeaveClick: () -> Unit,
+    onCheckEventClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -71,15 +74,15 @@ fun UserSideBar(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFE8F5E9)) // Light green background
+                .background(Color(0xFFE8F5E9))
         ) {
             item {
                 NavigationMenuItem(icon = Icons.Default.Home, text = "Home")
                 NavigationMenuItem(icon = Icons.Default.Person, text = "Profile")
                 NavigationMenuItem(icon = Icons.Default.Article, text = "Notices")
-                NavigationMenuItem(icon = Icons.Default.AddLocationAlt, text = "Add geo")
-                NavigationMenuItem(icon = Icons.Default.Event, text = "Check Event")
-                NavigationMenuItem(icon = Icons.Default.EditCalendar, text = "Post Leave")
+                NavigationMenuItem(icon = Icons.Default.AddLocationAlt, text = "Add geo", onClick = onAddGeoClick)
+                NavigationMenuItem(icon = Icons.Default.Event, text = "Check Event", onClick = onCheckEventClick)
+                NavigationMenuItem(icon = Icons.Default.EditCalendar, text = "Post Leave", onClick = onPostLeaveClick)
                 NavigationMenuItem(icon = Icons.Default.History, text = "Leave History")
                 NavigationMenuItem(icon = Icons.Default.Newspaper, text = "Memes, Jokes and News")
                 NavigationMenuItem(icon = Icons.Default.WbSunny, text = "Check Weather")
@@ -140,6 +143,9 @@ fun NavigationMenuItem(icon: ImageVector, text: String, onClick: () -> Unit = {}
 fun UserSideBarPreview() {
     UserSideBar(
         userName = "Ratan",
-        email = "soumadeepbarik2001@gmail.com"
+        email = "soumadeepbarik2001@gmail.com",
+        onAddGeoClick = {},
+        onPostLeaveClick = {},
+        onCheckEventClick = {}
     )
 }

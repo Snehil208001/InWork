@@ -64,6 +64,7 @@ import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.core.utils.navigationbar.UserBottomAppBar
 import com.example.inwork.core.utils.navigationbar.UserSideBar
+import com.example.inwork.mainui.leavescreen.ui.PostLeaveScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeEvent
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeViewModel
@@ -75,12 +76,15 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
+import com.example.inwork.mainui.eventscreen.ui.CheckEventScreen
 
 sealed class UserScreen(val title: String) {
     object Home : UserScreen("Home")
     object AddGeo : UserScreen("Add Geo")
     object Notices : UserScreen("Notices")
     object Notification : UserScreen("Notifications")
+    object PostLeave : UserScreen("Post Leave")
+    object CheckEvent : UserScreen("Check Event")
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -136,7 +140,6 @@ fun UserHomeScreen(
         )
     }
 
-    // This BackHandler correctly closes the sidebar first.
     BackHandler(enabled = drawerState.isOpen || currentScreen != UserScreen.Home) {
         if (drawerState.isOpen) {
             scope.launch {
@@ -185,13 +188,24 @@ fun UserHomeScreen(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        // This disables the drag-to-open gesture ONLY on the map screen.
         gesturesEnabled = !isAddGeoScreen,
         drawerContent = {
             ModalDrawerSheet {
                 UserSideBar(
                     userName = "Ratan",
-                    email = "soumadeepbarik2001@gmail.com"
+                    email = "soumadeepbarik2001@gmail.com",
+                    onAddGeoClick = {
+                        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.AddGeo))
+                        scope.launch { drawerState.close() }
+                    },
+                    onPostLeaveClick = {
+                        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.PostLeave))
+                        scope.launch { drawerState.close() }
+                    },
+                    onCheckEventClick = {
+                        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.CheckEvent))
+                        scope.launch { drawerState.close() }
+                    }
                 )
             }
         }
@@ -259,7 +273,6 @@ fun UserHomeScreen(
                     }
 
                     is UserScreen.AddGeo -> {
-                        // We pass a function to the AddGeoScreen to tell it how to close the drawer.
                         AddGeoScreen(
                             hasLocationPermission = state.hasLocationPermission,
                             isDrawerOpen = drawerState.isOpen,
@@ -280,6 +293,15 @@ fun UserHomeScreen(
                     is UserScreen.Notification -> {
                         NotificationScreen()
                     }
+                    is UserScreen.PostLeave -> {
+                        PostLeaveScreen(onPostLeave = { designation, fromDate, toDate, reason ->
+                            println("Leave Request Submitted: Designation=$designation, From=$fromDate, To=$toDate, Reason=$reason")
+                            viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Home))
+                        })
+                    }
+                    is UserScreen.CheckEvent -> {
+                        CheckEventScreen()
+                    }
                 }
             }
         }
@@ -290,7 +312,7 @@ fun UserHomeScreen(
 fun AddGeoScreen(
     hasLocationPermission: Boolean,
     isDrawerOpen: Boolean,
-    onCloseDrawer: () -> Unit // This function is called when the user clicks outside.
+    onCloseDrawer: () -> Unit
 ) {
     val context = LocalContext.current
     var currentLocation by remember { mutableStateOf<Location?>(null) }
@@ -319,16 +341,14 @@ fun AddGeoScreen(
             uiSettings = MapUiSettings(myLocationButtonEnabled = hasLocationPermission)
         )
 
-        // NEW: This transparent Box acts as an interceptor when the drawer is open.
         if (isDrawerOpen) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Transparent) // It's invisible.
+                    .background(Color.Transparent)
                     .pointerInput(Unit) {
-                        // It detects taps anywhere on the screen...
                         detectTapGestures(
-                            onTap = { onCloseDrawer() } // ...and uses them to close the drawer.
+                            onTap = { onCloseDrawer() }
                         )
                     }
             )

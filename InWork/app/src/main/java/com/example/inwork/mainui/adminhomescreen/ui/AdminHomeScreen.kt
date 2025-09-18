@@ -34,9 +34,9 @@ import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.mainui.addemployeescreen.ui.AddEmployeeScreen
 import com.example.inwork.mainui.addofficescreen.ui.AddOfficeScreen
+import com.example.inwork.mainui.admineventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
-import com.example.inwork.mainui.eventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import kotlinx.coroutines.launch
@@ -228,10 +228,11 @@ fun AdminHomeScreen(
                         }
                     }
                     is AdminScreen.AddEvent -> {
-                        AddEventScreen { date, event ->
-                            println("Saving Event -> Date: $date, Event: $event")
-                            viewModel.onEvent(AdminHomeEvent.NavigateBack)
-                        }
+                        AddEventScreen(
+                            onNavigateBack = {
+                                viewModel.onEvent(AdminHomeEvent.NavigateBack)
+                            }
+                        )
                     }
                     is AdminScreen.AddEmployee -> {
                         AddEmployeeScreen(

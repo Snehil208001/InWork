@@ -30,7 +30,7 @@ data class AddEmployeeState(
     val showEndTimePicker: Boolean = false,
     val showEffectiveDatePicker: Boolean = false,
     val showEndDatePicker: Boolean = false,
-    val showOfficeDialog: Boolean = false
+    val officeNames: List<String> = listOf("Meta", "TCS", "WIPRO", "HCL", "TCL", "OTHERS")
 )
 
 sealed class AddEmployeeEvent {
@@ -60,8 +60,6 @@ sealed class AddEmployeeEvent {
     object DismissEffectiveDatePicker : AddEmployeeEvent()
     object ShowEndDatePicker : AddEmployeeEvent()
     object DismissEndDatePicker : AddEmployeeEvent()
-    object ShowOfficeDialog : AddEmployeeEvent()
-    object DismissOfficeDialog : AddEmployeeEvent()
 }
 
 class AddEmployeeViewModel : ViewModel() {
@@ -111,8 +109,6 @@ class AddEmployeeViewModel : ViewModel() {
             AddEmployeeEvent.DismissEffectiveDatePicker -> _state.update { it.copy(showEffectiveDatePicker = false) }
             AddEmployeeEvent.ShowEndDatePicker -> _state.update { it.copy(showEndDatePicker = true) }
             AddEmployeeEvent.DismissEndDatePicker -> _state.update { it.copy(showEndDatePicker = false) }
-            AddEmployeeEvent.ShowOfficeDialog -> _state.update { it.copy(showOfficeDialog = true) }
-            AddEmployeeEvent.DismissOfficeDialog -> _state.update { it.copy(showOfficeDialog = false) }
         }
     }
 }

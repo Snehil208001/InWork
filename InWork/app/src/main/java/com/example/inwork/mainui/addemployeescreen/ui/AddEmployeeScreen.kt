@@ -114,17 +114,6 @@ fun AddEmployeeScreen(
         }
     }
 
-    if (state.showOfficeDialog) {
-        OfficeSelectionDialog(
-            onDismiss = { viewModel.onEvent(AddEmployeeEvent.DismissOfficeDialog) },
-            onOfficeSelected = { selectedOffice ->
-                viewModel.onEvent(AddEmployeeEvent.OfficeChanged(selectedOffice))
-                viewModel.onEvent(AddEmployeeEvent.DismissOfficeDialog)
-            }
-        )
-    }
-
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -145,29 +134,14 @@ fun AddEmployeeScreen(
         FormInputField(value = state.mobile, onValueChange = { viewModel.onEvent(AddEmployeeEvent.MobileChanged(it)) }, label = "Mobile", isError = state.isError && state.mobile.isBlank())
         FormInputField(value = state.email, onValueChange = { viewModel.onEvent(AddEmployeeEvent.EmailChanged(it)) }, label = "Email", isError = state.isError && state.email.isBlank())
 
-        Box {
-            IconInputField(
-                value = state.office,
-                onValueChange = {},
-                label = "Click On it to Add Office",
-                icon = null,
-                isError = state.isError && state.office.isBlank(),
-                readOnly = true,
-                onIconClick = {},
-                modifier = Modifier.clickable { viewModel.onEvent(AddEmployeeEvent.ShowOfficeDialog) }
-            )
-            IconButton(
-                onClick = { /* TODO: Handle Add More Office click */ },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 8.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(imageVector = Icons.Default.AddCircleOutline, contentDescription = "Add More Office")
-                    Text("AddMoreOffice", fontSize = 8.sp)
-                }
-            }
-        }
+        OfficeDropdownMenu(
+            officeName = state.office,
+            officeNames = state.officeNames,
+            onOfficeSelected = {
+                viewModel.onEvent(AddEmployeeEvent.OfficeChanged(it))
+            },
+            isError = state.isError && state.office.isBlank()
+        )
 
         IconInputField(value = state.workStartTime, onValueChange = {}, label = "Work Start Time", icon = Icons.Default.AccessTime, isError = state.isError && state.workStartTime.isBlank(), onIconClick = { viewModel.onEvent(AddEmployeeEvent.ShowStartTimePicker) })
         IconInputField(value = state.workEndTime, onValueChange = {}, label = "Work End Time", icon = Icons.Default.AccessTime, isError = state.isError && state.workEndTime.isBlank(), onIconClick = { viewModel.onEvent(AddEmployeeEvent.ShowEndTimePicker) })
@@ -282,6 +256,59 @@ fun IconInputField(
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun OfficeDropdownMenu(
+    officeName: String,
+    officeNames: List<String>,
+    onOfficeSelected: (String) -> Unit,
+    isError: Boolean
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.padding(bottom = 8.dp)) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = officeName,
+                onValueChange = { /* Do nothing, it's a dropdown */ },
+                label = { Text("Office Name") },
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                isError = isError,
+                shape = RoundedCornerShape(12.dp)
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                officeNames.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption) },
+                        onClick = {
+                            onOfficeSelected(selectionOption)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+        if (isError) {
+            Text(
+                text = "Required",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
 private fun ShowTimePicker(
     context: android.content.Context,
     onTimeSelected: (String) -> Unit
@@ -309,35 +336,6 @@ private fun Long.toFormattedDate(): String {
     val date = Date(this)
     val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return format.format(date)
-}
-
-@Composable
-fun OfficeSelectionDialog(
-    onDismiss: () -> Unit,
-    onOfficeSelected: (String) -> Unit
-) {
-    var officeName by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Select Office") },
-        text = {
-            OutlinedTextField(
-                value = officeName,
-                onValueChange = { officeName = it },
-                label = { Text("Office Name") }
-            )
-        },
-        confirmButton = {
-            Button(onClick = { onOfficeSelected(officeName) }) {
-                Text("Select")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
 }
 
 @Preview(showBackground = true, showSystemUi = true)
