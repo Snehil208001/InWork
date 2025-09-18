@@ -71,7 +71,11 @@ fun CalendarView(
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        LazyVerticalGrid(columns = GridCells.Fixed(7), userScrollEnabled = false) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(7),
+            userScrollEnabled = false,
+            modifier = Modifier.height(280.dp) // Fixed height to prevent unbounded constraint error
+        ) {
             items(firstDayOfMonth) { Spacer(modifier = Modifier.size(40.dp)) }
             items(days) { day ->
                 val date = currentMonth.atDay(day)

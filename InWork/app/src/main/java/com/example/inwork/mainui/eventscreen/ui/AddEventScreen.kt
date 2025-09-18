@@ -30,6 +30,8 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.*
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,80 +84,68 @@ fun AddEventScreen(
         }
     }
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        item { Spacer(modifier = Modifier.height(24.dp)) }
-        item {
-            CalendarView(
-                selectedDate = selectedDate,
-                onDateSelected = { newDate -> selectedDate = newDate }
-            )
+        Spacer(modifier = Modifier.height(24.dp))
+        CalendarView(
+            selectedDate = selectedDate,
+            onDateSelected = { newDate -> selectedDate = newDate }
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        FormInputField(
+            value = state.eventName,
+            onValueChange = { viewModel.onEvent(AddEventEvent.EventNameChanged(it)) },
+            label = "Event Name",
+            isError = state.isError && state.eventName.isBlank()
+        )
+        FormInputField(
+            value = state.eventDescription,
+            onValueChange = { viewModel.onEvent(AddEventEvent.EventDescriptionChanged(it)) },
+            label = "Event Description",
+            isError = state.isError && state.eventDescription.isBlank()
+        )
+        IconInputField(
+            value = state.eventDate,
+            onValueChange = {},
+            label = "Date (YYYY-MM-DD)",
+            icon = Icons.Default.CalendarToday,
+            isError = state.isError && state.eventDate.isBlank(),
+            onIconClick = { viewModel.onEvent(AddEventEvent.ShowEventDatePicker) }
+        )
+        IconInputField(
+            value = state.eventStartTime,
+            onValueChange = {},
+            label = "Start Time (24h)",
+            icon = Icons.Default.AccessTime,
+            isError = state.isError && state.eventStartTime.isBlank(),
+            onIconClick = { viewModel.onEvent(AddEventEvent.ShowStartTimePicker) }
+        )
+        IconInputField(
+            value = state.eventEndTime,
+            onValueChange = {},
+            label = "End Time (24h)",
+            icon = Icons.Default.AccessTime,
+            isError = state.isError && state.eventEndTime.isBlank(),
+            onIconClick = { viewModel.onEvent(AddEventEvent.ShowEndTimePicker) }
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = { viewModel.onEvent(AddEventEvent.AddEventClicked) },
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .height(50.dp),
+            shape = RoundedCornerShape(25.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF009B4D))
+        ) {
+            Text("ADD EVENT", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
         }
-        item {
-            FormInputField(
-                value = state.eventName,
-                onValueChange = { viewModel.onEvent(AddEventEvent.EventNameChanged(it)) },
-                label = "Event Name",
-                isError = state.isError && state.eventName.isBlank()
-            )
-        }
-        item {
-            FormInputField(
-                value = state.eventDescription,
-                onValueChange = { viewModel.onEvent(AddEventEvent.EventDescriptionChanged(it)) },
-                label = "Event Description",
-                isError = state.isError && state.eventDescription.isBlank()
-            )
-        }
-        item {
-            IconInputField(
-                value = state.eventDate,
-                onValueChange = {},
-                label = "Date (YYYY-MM-DD)",
-                icon = Icons.Default.CalendarToday,
-                isError = state.isError && state.eventDate.isBlank(),
-                onIconClick = { viewModel.onEvent(AddEventEvent.ShowEventDatePicker) }
-            )
-        }
-        item {
-            IconInputField(
-                value = state.eventStartTime,
-                onValueChange = {},
-                label = "Start Time (24h)",
-                icon = Icons.Default.AccessTime,
-                isError = state.isError && state.eventStartTime.isBlank(),
-                onIconClick = { viewModel.onEvent(AddEventEvent.ShowStartTimePicker) }
-            )
-        }
-        item {
-            IconInputField(
-                value = state.eventEndTime,
-                onValueChange = {},
-                label = "End Time (24h)",
-                icon = Icons.Default.AccessTime,
-                isError = state.isError && state.eventEndTime.isBlank(),
-                onIconClick = { viewModel.onEvent(AddEventEvent.ShowEndTimePicker) }
-            )
-        }
-        item { Spacer(modifier = Modifier.height(24.dp)) }
-        item {
-            Button(
-                onClick = { viewModel.onEvent(AddEventEvent.AddEventClicked) },
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .height(50.dp),
-                shape = RoundedCornerShape(25.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF009B4D))
-            ) {
-                Text("ADD EVENT", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
-            }
-        }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
