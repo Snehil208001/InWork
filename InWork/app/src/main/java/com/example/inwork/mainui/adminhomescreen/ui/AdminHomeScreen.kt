@@ -8,6 +8,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -22,6 +24,7 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -32,6 +35,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -42,8 +46,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-// Import the Screen sealed class for navigation routes
 import com.example.inwork.core.navigation.Screen
+import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.AdminBottomAppBar
 import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
@@ -57,7 +61,6 @@ import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import kotlinx.coroutines.launch
-import com.example.inwork.core.utils.components.LocationPermissionBanner as PermissionBanner
 
 sealed class AdminScreen(val title: String) {
     object Home : AdminScreen("Home")
@@ -225,13 +228,13 @@ fun AdminHomeScreen(
             },
             floatingActionButtonPosition = FabPosition.Center,
         ) { innerPadding ->
-            Column(
+            Box(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
                 if (!state.hasLocationPermission) {
-                    PermissionBanner(onBannerClick = {
+                    LocationPermissionBanner(onBannerClick = {
                         val hasForeground = ContextCompat.checkSelfPermission(
                             context,
                             Manifest.permission.ACCESS_FINE_LOCATION
@@ -248,14 +251,22 @@ fun AdminHomeScreen(
 
                 when (currentScreen) {
                     is AdminScreen.Home -> {
-                        Column(modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White)) {
-                            Text(text = "Admin Home Screen Content")
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.White)
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Welcome to the Admin Dashboard!",
+                                style = MaterialTheme.typography.headlineLarge
+                            )
                         }
                     }
                     is AdminScreen.AllMenu -> {
-                        // AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
+                        AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                     }
                     is AdminScreen.SentNotice -> {
                         Column(modifier = Modifier
