@@ -32,7 +32,8 @@ fun UserSideBar(
     onPostLeaveClick: () -> Unit,
     onCheckEventClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onContactUsClick: () -> Unit // ADDED: New parameter for Contact Us
+    onContactUsClick: () -> Unit,
+    onLogoutClick: () -> Unit // ADDED: The onLogoutClick parameter
 ) {
     Column(
         modifier = Modifier
@@ -98,10 +99,10 @@ fun UserSideBar(
 
             item { NavigationHeader(text = "Log Out") }
             item {
-                // MODIFIED: Pass the onContactUsClick lambda to this item
                 NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us", onClick = onContactUsClick)
                 NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings", onClick = onSettingsClick)
-                NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout")
+                // MODIFIED: Pass the onLogoutClick lambda to the Logout item
+                NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout", onClick = onLogoutClick)
                 NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account")
             }
         }
@@ -151,6 +152,7 @@ fun UserSideBarPreview() {
         onPostLeaveClick = {},
         onCheckEventClick = {},
         onSettingsClick = {},
-        onContactUsClick = {} // ADDED: Pass a placeholder lambda for the preview
+        onContactUsClick = {},
+        onLogoutClick = {} // ADDED: Pass a placeholder lambda for the preview
     )
 }

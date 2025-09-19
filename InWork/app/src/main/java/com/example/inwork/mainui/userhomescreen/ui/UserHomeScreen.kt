@@ -187,10 +187,17 @@ fun UserHomeScreen(
                         navController.navigate(Screen.GrantPermissionsScreen.route)
                         scope.launch { drawerState.close() }
                     },
-                    // ADDED: Pass the click handler for Contact Us
                     onContactUsClick = {
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.ContactUs))
                         scope.launch { drawerState.close() }
+                    },
+                    onLogoutClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.userHome.route) {
+                                inclusive = true
+                            }
+                        }
                     }
                 )
             }
@@ -288,7 +295,6 @@ fun UserHomeScreen(
                     is UserScreen.CheckEvent -> {
                         CheckEventScreen()
                     }
-                    // ADDED: Case to display the Contact Us screen
                     is UserScreen.ContactUs -> {
                         ContactUsContent()
                     }

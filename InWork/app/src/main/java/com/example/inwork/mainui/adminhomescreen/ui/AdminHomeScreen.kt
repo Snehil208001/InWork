@@ -167,16 +167,21 @@ fun AdminHomeScreen(
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Dashboard))
                         scope.launch { drawerState.close() }
                     },
-                    onLogoutClick = { /* TODO: Implement Logout */ },
+                    onLogoutClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.adminHome.route) {
+                                inclusive = true
+                            }
+                        }
+                    },
                     onDeleteAccountClick = { /* TODO: Implement Delete Account */ },
                     onContactUsClick = {
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.ContactUs))
                         scope.launch { drawerState.close() }
                     },
-                    // THIS IS THE CORRECTED PART
                     onSettingsClick = {
                         scope.launch { drawerState.close() }
-                        // Use NavController to navigate, which correctly handles the back stack
                         navController.navigate(Screen.AdminSettingsScreen.route)
                     }
                 )
@@ -250,7 +255,7 @@ fun AdminHomeScreen(
                         }
                     }
                     is AdminScreen.AllMenu -> {
-                        AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
+                        // AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                     }
                     is AdminScreen.SentNotice -> {
                         Column(modifier = Modifier
@@ -300,8 +305,6 @@ fun AdminHomeScreen(
                     is AdminScreen.ContactUs -> {
                         ContactUsContent()
                     }
-                    // The call to AdminSettingsScreen is still here, but it won't be used
-                    // for navigation from the sidebar anymore. It might be used by the bottom bar.
                     is AdminScreen.Settings -> {
                         AdminSettingsScreen()
                     }
