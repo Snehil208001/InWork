@@ -128,6 +128,10 @@ fun AdminHomeScreen(
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.SentNotice))
                         scope.launch { drawerState.close() }
                     },
+                    onCreateNoticeClick = {
+                        viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked)
+                        scope.launch { drawerState.close() }
+                    },
                     onAddEventClick = {
                         viewModel.onEvent(AdminHomeEvent.AddEventClicked)
                         scope.launch { drawerState.close() }

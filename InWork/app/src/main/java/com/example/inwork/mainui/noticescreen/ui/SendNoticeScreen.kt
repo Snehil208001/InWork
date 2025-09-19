@@ -5,19 +5,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.inwork.mainui.noticescreen.viewmodel.SendNoticeEvent
+import com.example.inwork.mainui.noticescreen.viewmodel.SendNoticeViewModel
 
 @Composable
-fun SendNoticeScreen(onSendNotice: (title: String, notice: String) -> Unit) {
-    var title by remember { mutableStateOf("") }
-    var notice by remember { mutableStateOf("") }
-    var isTitleError by remember { mutableStateOf(false) }
-    var isNoticeError by remember { mutableStateOf(false) }
+fun SendNoticeScreen(
+    viewModel: SendNoticeViewModel = viewModel(),
+    onSendNotice: (title: String, notice: String) -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -26,18 +31,17 @@ fun SendNoticeScreen(onSendNotice: (title: String, notice: String) -> Unit) {
             .verticalScroll(rememberScrollState())
     ) {
         OutlinedTextField(
-            value = title,
+            value = uiState.title,
             onValueChange = {
-                title = it
-                isTitleError = it.isBlank()
+                viewModel.onEvent(SendNoticeEvent.TitleChanged(it))
             },
             label = { Text("Title") },
             modifier = Modifier.fillMaxWidth(),
-            isError = isTitleError,
+            isError = uiState.isTitleError,
             singleLine = true,
             shape = RoundedCornerShape(8.dp)
         )
-        if (isTitleError) {
+        if (uiState.isTitleError) {
             Text(
                 text = "Required",
                 color = MaterialTheme.colorScheme.error,
@@ -49,19 +53,18 @@ fun SendNoticeScreen(onSendNotice: (title: String, notice: String) -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
-            value = notice,
+            value = uiState.notice,
             onValueChange = {
-                notice = it
-                isNoticeError = it.isBlank()
+                viewModel.onEvent(SendNoticeEvent.NoticeChanged(it))
             },
             label = { Text("Notice...") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
-            isError = isNoticeError,
+            isError = uiState.isNoticeError,
             shape = RoundedCornerShape(8.dp)
         )
-        if (isNoticeError) {
+        if (uiState.isNoticeError) {
             Text(
                 text = "Required",
                 color = MaterialTheme.colorScheme.error,
@@ -74,10 +77,9 @@ fun SendNoticeScreen(onSendNotice: (title: String, notice: String) -> Unit) {
 
         Button(
             onClick = {
-                isTitleError = title.isBlank()
-                isNoticeError = notice.isBlank()
-                if (!isTitleError && !isNoticeError) {
-                    onSendNotice(title, notice)
+                viewModel.onEvent(SendNoticeEvent.SendNoticeClicked)
+                if (!uiState.isTitleError && !uiState.isNoticeError) {
+                    onSendNotice(uiState.title, uiState.notice)
                 }
             },
             modifier = Modifier

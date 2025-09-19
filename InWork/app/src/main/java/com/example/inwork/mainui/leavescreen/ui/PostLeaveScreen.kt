@@ -30,10 +30,8 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,53 +39,41 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.inwork.mainui.leavescreen.viewmodel.PostLeaveEvent
+import com.example.inwork.mainui.leavescreen.viewmodel.PostLeaveViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostLeaveScreen(
+    viewModel: PostLeaveViewModel = viewModel(),
     onPostLeave: (designation: String, fromDate: String, toDate: String, reason: String) -> Unit
 ) {
-    var designation by remember { mutableStateOf("") }
-    var fromDate by remember { mutableStateOf("") }
-    var toDate by remember { mutableStateOf("") }
-    var leaveReason by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
 
-    var isDesignationError by remember { mutableStateOf(false) }
-    var isFromDateError by remember { mutableStateOf(false) }
-    var isToDateError by remember { mutableStateOf(false) }
-    var isReasonError by remember { mutableStateOf(false) }
-
-    var showFromDatePicker by remember { mutableStateOf(false) }
-    var showToDatePicker by remember { mutableStateOf(false) }
-
-    if (showFromDatePicker) {
+    if (uiState.showFromDatePicker) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { showFromDatePicker = false },
+            onDismissRequest = { viewModel.onEvent(PostLeaveEvent.DismissFromDatePicker) },
             confirmButton = {
                 Button(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        fromDate = millis.toFormattedDate()
-                    }
-                    showFromDatePicker = false
+                    // UPDATED: Send the raw millis to the ViewModel
+                    viewModel.onEvent(PostLeaveEvent.FromDateSelected(datePickerState.selectedDateMillis))
+                    viewModel.onEvent(PostLeaveEvent.DismissFromDatePicker)
                 }) { Text("OK") }
             }
         ) { DatePicker(state = datePickerState) }
     }
 
-    if (showToDatePicker) {
+    if (uiState.showToDatePicker) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
-            onDismissRequest = { showToDatePicker = false },
+            onDismissRequest = { viewModel.onEvent(PostLeaveEvent.DismissToDatePicker) },
             confirmButton = {
                 Button(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        toDate = millis.toFormattedDate()
-                    }
-                    showToDatePicker = false
+                    // UPDATED: Send the raw millis to the ViewModel
+                    viewModel.onEvent(PostLeaveEvent.ToDateSelected(datePickerState.selectedDateMillis))
+                    viewModel.onEvent(PostLeaveEvent.DismissToDatePicker)
                 }) { Text("OK") }
             }
         ) { DatePicker(state = datePickerState) }
@@ -102,46 +88,41 @@ fun PostLeaveScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         FormInputField(
-            value = designation,
-            onValueChange = { designation = it; isDesignationError = it.isBlank() },
+            value = uiState.designation,
+            onValueChange = { viewModel.onEvent(PostLeaveEvent.DesignationChanged(it)) },
             label = "Designation",
-            isError = isDesignationError
+            isError = uiState.isDesignationError
         )
 
-        // CHANGED: The "From" date field is now a Row with the text field and icon button
         DateFieldWithIcon(
-            value = fromDate,
+            value = uiState.fromDate,
             label = "From(YYYY-MM-DD)",
-            isError = isFromDateError,
-            onIconClick = { showFromDatePicker = true }
+            isError = uiState.isFromDateError,
+            onIconClick = { viewModel.onEvent(PostLeaveEvent.ShowFromDatePicker) }
         )
 
-        // CHANGED: The "To" date field is also a Row with the text field and icon button
         DateFieldWithIcon(
-            value = toDate,
+            value = uiState.toDate,
             label = "To(YYYY-MM-DD)",
-            isError = isToDateError,
-            onIconClick = { showToDatePicker = true }
+            isError = uiState.isToDateError,
+            onIconClick = { viewModel.onEvent(PostLeaveEvent.ShowToDatePicker) }
         )
 
         FormInputField(
-            value = leaveReason,
-            onValueChange = { leaveReason = it; isReasonError = it.isBlank() },
+            value = uiState.leaveReason,
+            onValueChange = { viewModel.onEvent(PostLeaveEvent.LeaveReasonChanged(it)) },
             label = "Leave Reason",
-            isError = isReasonError
+            isError = uiState.isReasonError
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = {
-                isDesignationError = designation.isBlank()
-                isFromDateError = fromDate.isBlank()
-                isToDateError = toDate.isBlank()
-                isReasonError = leaveReason.isBlank()
-
-                if (!isDesignationError && !isFromDateError && !isToDateError && !isReasonError) {
-                    onPostLeave(designation, fromDate, toDate, leaveReason)
+                viewModel.onEvent(PostLeaveEvent.PostLeaveClicked)
+                val currentState = viewModel.uiState.value // Re-check the latest state
+                if (!currentState.isDesignationError && !currentState.isFromDateError && !currentState.isToDateError && !currentState.isReasonError && currentState.designation.isNotBlank()) {
+                    onPostLeave(currentState.designation, currentState.fromDate, currentState.toDate, currentState.leaveReason)
                 }
             },
             modifier = Modifier
@@ -156,7 +137,6 @@ fun PostLeaveScreen(
     }
 }
 
-// NEW COMPOSABLE: A Row that holds the date field and the external icon button
 @Composable
 fun DateFieldWithIcon(
     value: String,
@@ -210,7 +190,6 @@ fun DateFieldWithIcon(
     }
 }
 
-// Reusing FormInputField for other fields
 @Composable
 fun FormInputField(
     value: String,
@@ -243,11 +222,7 @@ fun FormInputField(
     }
 }
 
-private fun Long.toFormattedDate(): String {
-    val date = Date(this)
-    val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    return format.format(date)
-}
+// REMOVED the toFormattedDate() function from this file.
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

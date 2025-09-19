@@ -33,6 +33,7 @@ fun AdminSideBar(
     onProfileClick: () -> Unit,
     onAllEmployeesClick: () -> Unit,
     onSentNoticesClick: () -> Unit,
+    onCreateNoticeClick: () -> Unit, // ADD onCreateNoticeClick parameter
     onAddEventClick: () -> Unit,
     onAddEmployeeClick: () -> Unit,
     onAddOfficesClick: () -> Unit,
@@ -98,7 +99,8 @@ fun AdminSideBar(
                 NavigationMenuItem(icon = Icons.Default.Work, text = "Employee Status")
                 NavigationMenuItem(icon = Icons.Default.CalendarToday, text = "Leave Requests")
                 NavigationMenuItem(icon = Icons.Default.Assessment, text = "Monthly Reports")
-                NavigationMenuItem(icon = Icons.Default.Send, text = "Send Notice", onClick = onSentNoticesClick)
+                // UPDATED the "Send Notice" item to "Create Notice" and used the new onClick lambda
+                NavigationMenuItem(icon = Icons.Default.Add, text = "Create Notice", onClick = onCreateNoticeClick)
                 NavigationMenuItem(icon = Icons.Default.PersonAdd, text = "Add Employee", onClick = onAddEmployeeClick)
                 NavigationMenuItem(icon = Icons.Default.Business, text = "Add Offices", onClick = onAddOfficesClick)
                 NavigationMenuItem(icon = Icons.Default.LocationCity, text = "All Offices", onClick = onAllOfficesClick)
