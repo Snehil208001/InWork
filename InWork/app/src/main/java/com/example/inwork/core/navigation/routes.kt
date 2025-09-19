@@ -37,5 +37,8 @@ sealed class Screen(val route: String) {
 
     object GrantPermissionsScreen: Screen("grant_permissions_screen")
 
+    // ADD THIS NEW OBJECT FOR THE ADMIN SETTINGS SCREEN
+    object AdminSettingsScreen : Screen("admin_settings_screen")
+
 
 }

@@ -12,6 +12,7 @@ import com.example.inwork.mainui.addofficescreen.ui.AddOfficeScreen
 import com.example.inwork.mainui.addofficescreen.ui.OfficeLocationPickerScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AllMenuContent
+import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
 import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
 import com.example.inwork.mainui.permissionscreen.ui.GrantPermissionsScreen
@@ -28,31 +29,31 @@ fun MyAppNav(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Splash.route, // Use Screen sealed class
+        startDestination = Screen.Splash.route,
         modifier = modifier
     ) {
-        composable(Screen.Splash.route) { // Use Screen.Splash.route
+        composable(Screen.Splash.route) {
             SplashScreen(navController = navController)
         }
-        composable(Screen.Onboarding.route) { // Use Screen.Onboarding.route
+        composable(Screen.Onboarding.route) {
             OnboardingScreen(navController = navController)
         }
-        composable(Screen.Permission.route) { // Use Screen.Permission.route
+        composable(Screen.Permission.route) {
             PermissionScreen(navController = navController)
         }
-        composable(Screen.Login.route) { // Use Screen.Login.route
+        composable(Screen.Login.route) {
             LoginScreen(navController = navController)
         }
-        composable(Screen.Signup.route) { // Use Screen.Signup.route
+        composable(Screen.Signup.route) {
             SignUpScreen(navController = navController)
         }
-        composable(Screen.adminHome.route) { // Use Screen.adminHome.route
+        composable(Screen.adminHome.route) {
             AdminHomeScreen(navController = navController)
         }
         composable(Screen.userHome.route) {
             UserHomeScreen(navController = navController)
         }
-        composable(Screen.AllMenu.route) { // Use Screen.AllMenu.route
+        composable(Screen.AllMenu.route) {
             AllMenuContent(navController = navController)
         }
         composable(Screen.OfficeLocationPicker.route) {
@@ -64,23 +65,14 @@ fun MyAppNav(
         composable(route = Screen.GrantPermissionsScreen.route) {
             GrantPermissionsScreen(
 
-                onGrantLocation = {
-                    // Logic to request LOCATION permission
-                },
-                onGrantBackgroundLocation = {
-                    // Logic to request BACKGROUND LOCATION permission
-                },
-                onGrantScreentime = {
-                    // Logic to request SCREENTIME permission
-                },
-                onGrantPhone = {
-                    // Logic to request PHONE permission
-                },
-                onGrantNotifications = {
-                    // Logic to request NOTIFICATIONS permission
-                }
+            )
+        }
+
+        // MOVED THE ADMIN SETTINGS SCREEN COMPOSABLE INSIDE THE NAVHOST
+        composable(Screen.AdminSettingsScreen.route) {
+            AdminSettingsScreen(
+
             )
         }
     }
-
 }

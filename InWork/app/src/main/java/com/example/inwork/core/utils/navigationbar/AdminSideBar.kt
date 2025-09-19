@@ -19,9 +19,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inwork.R
+// Import your Screen class
+import com.example.inwork.core.navigation.Screen
+// Import NavController
+import androidx.navigation.NavController
 
 @Composable
 fun AdminSideBar(
+    navController: NavController, // ADD NavController parameter
     companyName: String,
     email: String,
     onHomeClick: () -> Unit,
@@ -35,7 +40,8 @@ fun AdminSideBar(
     onDashboardClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
-    onContactUsClick: () -> Unit
+    onContactUsClick: () -> Unit,
+    onSettingsClick: () -> Unit // ADD onSettingsClick parameter
 ) {
     Column(
         modifier = Modifier
@@ -104,7 +110,8 @@ fun AdminSideBar(
             item { NavigationHeader(text = "Log Out") }
             item {
                 NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us", onClick = onContactUsClick)
-                NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings")
+                // UPDATE the "Settings" item to use the new onClick lambda
+                NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings", onClick = onSettingsClick)
                 NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout", onClick = onLogoutClick)
                 NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account", onClick = onDeleteAccountClick)
             }

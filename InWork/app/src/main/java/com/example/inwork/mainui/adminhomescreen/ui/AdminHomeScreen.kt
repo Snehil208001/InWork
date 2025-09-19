@@ -37,6 +37,7 @@ import com.example.inwork.mainui.addofficescreen.ui.AddOfficeScreen
 import com.example.inwork.mainui.admineventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
+import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
@@ -55,6 +56,7 @@ sealed class AdminScreen(val title: String) {
     object AllOffices : AdminScreen("All Offices")
     object Dashboard : AdminScreen("Dashboard")
     object ContactUs : AdminScreen("Contact Us")
+    object Settings : AdminScreen("Settings")
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -113,6 +115,7 @@ fun AdminHomeScreen(
         drawerContent = {
             ModalDrawerSheet {
                 AdminSideBar(
+                    navController = navController,
                     companyName = "Apple",
                     email = "soumadeepbarik@gmail.com",
                     onHomeClick = {
@@ -150,6 +153,10 @@ fun AdminHomeScreen(
                     onContactUsClick = {
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.ContactUs))
                         scope.launch { drawerState.close() }
+                    },
+                    onSettingsClick = {
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Settings))
+                        scope.launch { drawerState.close() }
                     }
                 )
             }
@@ -166,6 +173,7 @@ fun AdminHomeScreen(
                     }
                 )
             },
+            // REMOVED conditional logic. Bottom bar is now always visible.
             bottomBar = {
                 AdminBottomAppBar(
                     currentScreen = currentScreen,
@@ -174,6 +182,7 @@ fun AdminHomeScreen(
                     }
                 )
             },
+            // REMOVED conditional logic. FAB is now always visible.
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked) },
@@ -197,6 +206,7 @@ fun AdminHomeScreen(
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
+                // The banner is still conditional, which is correct.
                 if (!state.hasLocationPermission) {
                     PermissionBanner(onBannerClick = {
                         val hasForeground = ContextCompat.checkSelfPermission(
@@ -263,6 +273,10 @@ fun AdminHomeScreen(
                     }
                     is AdminScreen.ContactUs -> {
                         ContactUsContent()
+                    }
+                    // CORRECTED the call to AdminSettingsScreen
+                    is AdminScreen.Settings -> {
+                        AdminSettingsScreen()
                     }
                 }
             }
