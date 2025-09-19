@@ -1,28 +1,131 @@
 package com.example.inwork.mainui.permissionscreen.ui
 
+import android.Manifest
+import android.app.AppOpsManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inwork.mainui.permissionscreen.viewmodel.GrantPermissionsViewModel
-import com.example.inwork.mainui.permissionscreen.viewmodel.PermissionEvent
+
+// Helper function to check for the Usage Access (Screen Time) permission
+private fun isUsageStatsPermissionGranted(context: Context): Boolean {
+    // This permission only exists on API 21+
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+        return false
+    }
+    val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    val mode = appOpsManager.checkOpNoThrow(
+        AppOpsManager.OPSTR_GET_USAGE_STATS,
+        android.os.Process.myUid(),
+        context.packageName
+    )
+    return mode == AppOpsManager.MODE_ALLOWED
+}
+
 
 @Composable
 fun GrantPermissionsScreen(
-    // The ViewModel is now the source of truth for events
     viewModel: GrantPermissionsViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+
+    // --- CHANGE: Check initial permission status ---
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    var hasBackgroundLocationPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true // Not applicable on older versions
+            }
+        )
+    }
+
+    var hasScreenTimePermission by remember {
+        mutableStateOf(isUsageStatsPermissionGranted(context))
+    }
+
+    var hasPhonePermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.CALL_PHONE
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    var hasNotificationsPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true // Granted by default on older versions
+            }
+        )
+    }
+
+
+    // --- Permission Launchers ---
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasLocationPermission = isGranted }
+    )
+
+    val backgroundLocationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasBackgroundLocationPermission = isGranted }
+    )
+
+    val phonePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasPhonePermission = isGranted }
+    )
+
+    val notificationsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasNotificationsPermission = isGranted }
+    )
+
+    // --- CHANGE: Re-check screen time permission when returning from settings ---
+    val screenTimePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        // When the user returns from the settings screen, update the status.
+        hasScreenTimePermission = isUsageStatsPermissionGranted(context)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -57,36 +160,60 @@ fun GrantPermissionsScreen(
                     PermissionCard(
                         title = "LOCATION",
                         description = "For usage of maps.",
-                        onGrantClick = { viewModel.onEvent(PermissionEvent.GrantLocationClicked) }
+                        // --- CHANGE: Pass the granted status ---
+                        isGranted = hasLocationPermission,
+                        onGrantClick = { locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
                     )
                 }
                 item {
                     PermissionCard(
                         title = "BACKGROUND LOCATION",
                         description = "Auto CheckIn/CheckOut",
-                        onGrantClick = { viewModel.onEvent(PermissionEvent.GrantBackgroundLocationClicked) }
+                        // --- CHANGE: Pass the granted status ---
+                        isGranted = hasBackgroundLocationPermission,
+                        onGrantClick = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            }
+                        }
                     )
                 }
                 item {
                     PermissionCard(
                         title = "SCREENTIME",
                         description = "Screen time analysis for productivity",
-                        onGrantClick = { viewModel.onEvent(PermissionEvent.GrantScreenTimeClicked) }
+                        // --- CHANGE: Pass the granted status ---
+                        isGranted = hasScreenTimePermission,
+                        onGrantClick = {
+                            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                            val uri = Uri.fromParts("package", context.packageName, null)
+                            intent.data = uri
+                            screenTimePermissionLauncher.launch(intent)
+                        }
                     )
                 }
                 item {
                     PermissionCard(
                         title = "PHONE",
                         description = "For contacting us",
-                        onGrantClick = { viewModel.onEvent(PermissionEvent.GrantPhoneClicked) }
+                        // --- CHANGE: Pass the granted status ---
+                        isGranted = hasPhonePermission,
+                        onGrantClick = { phonePermissionLauncher.launch(Manifest.permission.CALL_PHONE) }
                     )
                 }
-                item {
-                    PermissionCard(
-                        title = "NOTIFICATIONS",
-                        description = "To Post Notifications",
-                        onGrantClick = { viewModel.onEvent(PermissionEvent.GrantNotificationsClicked) }
-                    )
+                // --- CHANGE: Conditionally show Notification permission ---
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    item {
+                        PermissionCard(
+                            title = "NOTIFICATIONS",
+                            description = "To Post Notifications",
+                            // --- CHANGE: Pass the granted status ---
+                            isGranted = hasNotificationsPermission,
+                            onGrantClick = {
+                                notificationsPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -97,6 +224,8 @@ fun GrantPermissionsScreen(
 fun PermissionCard(
     title: String,
     description: String,
+    // --- CHANGE: Added isGranted parameter ---
+    isGranted: Boolean,
     onGrantClick: () -> Unit
 ) {
     Card(
@@ -125,11 +254,20 @@ fun PermissionCard(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = onGrantClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC8E6C9)),
-                shape = RoundedCornerShape(4.dp), // square-like
+                // --- CHANGE: Update button state and color based on isGranted ---
+                enabled = !isGranted,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isGranted) Color.Gray else Color(0xFFC8E6C9),
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.align(Alignment.Start)
             ) {
-                Text("GRANT", color = Color.Black)
+                // --- CHANGE: Update button text based on isGranted ---
+                Text(
+                    text = if (isGranted) "GRANTED" else "GRANT",
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -138,6 +276,5 @@ fun PermissionCard(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GrantPermissionsScreenPreview() {
-    // Preview now works without needing to pass lambdas
     GrantPermissionsScreen()
 }

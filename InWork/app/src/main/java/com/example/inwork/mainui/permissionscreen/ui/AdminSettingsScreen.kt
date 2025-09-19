@@ -1,41 +1,85 @@
 package com.example.inwork.mainui.adminsettings.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.inwork.mainui.permissionscreen.viewmodel.AdminSettingsEvent
-import com.example.inwork.mainui.permissionscreen.viewmodel.AdminSettingsViewModel
+import androidx.core.content.ContextCompat
 
 @Composable
-fun AdminSettingsScreen(
-    // The ViewModel is now injected by default
-    viewModel: AdminSettingsViewModel = viewModel()
-) {
+fun AdminSettingsScreen() {
+    val context = LocalContext.current
+
+    // State to track if permissions are granted
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Storage permission state (handles different Android versions)
+    val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_IMAGES
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+    var hasStoragePermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, storagePermission
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Notification permission state (for newer Android versions)
+    var hasNotificationPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                // Notifications are implicitly granted on older versions
+                true
+            }
+        )
+    }
+
+    // Permission launchers
+    val locationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasLocationPermission = isGranted }
+    )
+
+    val storageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasStoragePermission = isGranted }
+    )
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasNotificationPermission = isGranted }
+    )
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -72,8 +116,10 @@ fun AdminSettingsScreen(
                     PermissionCard(
                         title = "LOCATION",
                         description = "For usage of maps.",
-                        // Send event to ViewModel on click
-                        onGrantClick = { viewModel.onEvent(AdminSettingsEvent.GrantLocationClicked) }
+                        isGranted = hasLocationPermission,
+                        onGrantClick = {
+                            locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
                     )
                 }
 
@@ -81,17 +127,28 @@ fun AdminSettingsScreen(
                     PermissionCard(
                         title = "STORAGE PERMISSION",
                         description = "For the download of Pdfs.",
-                        onGrantClick = { viewModel.onEvent(AdminSettingsEvent.GrantStorageClicked) }
+                        isGranted = hasStoragePermission,
+                        onGrantClick = {
+                            storageLauncher.launch(storagePermission)
+                        }
                     )
                 }
 
-                item {
-                    PermissionCard(
-                        title = "NOTIFICATIONS",
-                        description = "To Post Notifications",
-                        onGrantClick = { viewModel.onEvent(AdminSettingsEvent.GrantNotificationsClicked) }
-                    )
+                // --- FIX START ---
+                // Only show the notification permission card on Android 13 (TIRAMISU) and above
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    item {
+                        PermissionCard(
+                            title = "NOTIFICATIONS",
+                            description = "To Post Notifications",
+                            isGranted = hasNotificationPermission,
+                            onGrantClick = {
+                                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        )
+                    }
                 }
+                // --- FIX END ---
             }
         }
     }
@@ -101,6 +158,7 @@ fun AdminSettingsScreen(
 fun PermissionCard(
     title: String,
     description: String,
+    isGranted: Boolean,
     onGrantClick: () -> Unit
 ) {
     Card(
@@ -120,11 +178,18 @@ fun PermissionCard(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = onGrantClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC8E6C9)),
+                enabled = !isGranted,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isGranted) Color.Gray else Color(0xFFC8E6C9),
+                    contentColor = Color.Black
+                ),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.align(Alignment.Start)
             ) {
-                Text("GRANT", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isGranted) "GRANTED" else "GRANT",
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -133,6 +198,5 @@ fun PermissionCard(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AdminSettingsScreenPreview() {
-    // The preview now works without needing to pass parameters
     AdminSettingsScreen()
 }
