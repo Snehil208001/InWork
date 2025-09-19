@@ -54,6 +54,7 @@ fun AddOfficeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .systemBarsPadding() // This adds the necessary top padding
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -90,7 +91,9 @@ fun AddOfficeScreen(
 
         Button(
             onClick = { navController.navigate(Screen.OfficeLocationPicker.route) },
-            modifier = Modifier.fillMaxWidth(0.8f).height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(50.dp),
             shape = RoundedCornerShape(25.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853))
         ) {
@@ -128,7 +131,9 @@ fun AddOfficeScreen(
 
         Button(
             onClick = { viewModel.onEvent(AddOfficeEvent.OnAddOfficeClick) },
-            modifier = Modifier.fillMaxWidth(0.8f).height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(50.dp),
             shape = RoundedCornerShape(25.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF009B4D))
         ) {

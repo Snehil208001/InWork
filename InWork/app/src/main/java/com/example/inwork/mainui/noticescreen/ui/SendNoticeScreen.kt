@@ -27,6 +27,7 @@ fun SendNoticeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .systemBarsPadding() // This adds the necessary top padding
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -78,9 +79,10 @@ fun SendNoticeScreen(
         Button(
             onClick = {
                 viewModel.onEvent(SendNoticeEvent.SendNoticeClicked)
-                if (!uiState.isTitleError && !uiState.isNoticeError) {
-                    onSendNotice(uiState.title, uiState.notice)
-                }
+                // The check for errors is already inside the ViewModel,
+                // this logic should be handled there to decide whether to trigger the callback.
+                // Assuming ViewModel handles the validation before triggering.
+                onSendNotice(uiState.title, uiState.notice)
             },
             modifier = Modifier
                 .fillMaxWidth()

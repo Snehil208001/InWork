@@ -118,11 +118,10 @@ fun AddEmployeeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .systemBarsPadding() // This adds the necessary top padding
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
         // Form fields
         FormInputField(value = state.employeeId, onValueChange = { viewModel.onEvent(AddEmployeeEvent.EmployeeIdChanged(it)) }, label = "Employee ID", isError = state.isError && state.employeeId.isBlank())
         FormInputField(value = state.firstName, onValueChange = { viewModel.onEvent(AddEmployeeEvent.FirstNameChanged(it)) }, label = "First Name", isError = state.isError && state.firstName.isBlank())
@@ -179,6 +178,7 @@ fun AddEmployeeScreen(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+//... (rest of the file is unchanged)
 
 @Composable
 fun FormInputField(

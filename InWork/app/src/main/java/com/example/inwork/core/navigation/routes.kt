@@ -6,39 +6,36 @@ package com.example.inwork.core.navigation
  * @property route The string identifier for the route.
  */
 sealed class Screen(val route: String) {
-    /**
-     * Represents the Splash screen.
-     */
+    // Core App Flow
     data object Splash : Screen("Splash")
-
-    /**
-     * Represents the Onboarding screen.
-     */
     data object Onboarding : Screen("Onboarding")
-
-    /**
-     * Represents the Permission screen.
-     */
     data object Permission : Screen("Permission")
-
     data object Login : Screen("Login")
-
     data object Signup : Screen("Signup")
-
     data object adminHome : Screen("adminHome")
-
     data object userHome : Screen("userHome")
-
     data object AllMenu : Screen("all_menu")
 
-    data object OfficeLocationPicker : Screen("OfficeLocationPicker")
-
+    // Screens from AllMenu
     data object AddOffice : Screen("AddOffice")
+    data object AdminSettingsScreen : Screen("admin_settings_screen")
+    data object AddEmployee : Screen("add_employee")
+    data object AddEvent : Screen("add_event")
+    data object ContactUs : Screen("contact_us")
+    data object SentNotices : Screen("sent_notices")
 
-    object GrantPermissionsScreen: Screen("grant_permissions_screen")
+    // Placeholder routes for future screens
+    data object Profile : Screen("profile")
+    data object News : Screen("news")
+    data object Weather : Screen("weather")
+    data object AllEmployees : Screen("all_employees")
+    data object EmployeeStatus : Screen("employee_status")
+    data object LeaveRequest : Screen("leave_request")
+    data object MonthlyReports : Screen("monthly_reports")
+    data object AllOffices : Screen("all_offices")
+    data object ScreenTime : Screen("screen_time")
 
-    // ADD THIS NEW OBJECT FOR THE ADMIN SETTINGS SCREEN
-    object AdminSettingsScreen : Screen("admin_settings_screen")
-
-
+    // Other existing screens
+    data object OfficeLocationPicker : Screen("OfficeLocationPicker")
+    data object GrantPermissionsScreen: Screen("grant_permissions_screen")
 }

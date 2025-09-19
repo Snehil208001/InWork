@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.inwork.mainui.admineventscreen.viewmodel.AddEventEvent
 import com.example.inwork.mainui.admineventscreen.viewmodel.AddEventViewModel
+// This import fixes the reference to CalendarView
 import com.example.inwork.mainui.eventscreen.ui.CalendarView
 import java.time.LocalDate
 
@@ -35,12 +36,11 @@ fun AddEventScreen(
     var eventName by remember { mutableStateOf("") }
     var isEventNameError by remember { mutableStateOf(false) }
 
-    // The Scaffold has been removed from here.
-    // This Column now becomes the root Composable for this screen's content.
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .systemBarsPadding() // This adds the necessary top padding
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -81,11 +81,9 @@ fun AddEventScreen(
             onClick = {
                 isEventNameError = eventName.isBlank()
                 if (!isEventNameError) {
-                    // Pass event data to ViewModel
                     viewModel.onEvent(AddEventEvent.EventNameChanged(eventName))
                     viewModel.onEvent(AddEventEvent.EventDateChanged(selectedDate.toString()))
                     viewModel.onEvent(AddEventEvent.AddEventClicked)
-                    // Potentially navigate back or show a confirmation
                     navController.popBackStack()
                 }
             },

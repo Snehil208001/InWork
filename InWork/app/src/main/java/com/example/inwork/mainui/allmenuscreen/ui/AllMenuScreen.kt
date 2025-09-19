@@ -1,6 +1,5 @@
 package com.example.inwork.mainui.adminhomescreen.ui
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,11 +25,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.inwork.mainui.allmenuscreen.viewmodel.AllMenuViewModel
 import com.example.inwork.mainui.allmenuscreen.viewmodel.MenuItem
 
-
-/**
- * The main content composable that builds the entire multi-section menu screen.
- * It is now stateless and driven by the AllMenuViewModel.
- */
 @Composable
 fun AllMenuContent(
     modifier: Modifier = Modifier,
@@ -45,54 +39,27 @@ fun AllMenuContent(
             .background(Color.White),
         contentPadding = PaddingValues(bottom = 16.dp),
     ) {
-        // "General" Section
-        item {
-            SectionHeader("General")
-        }
-        item {
-            MenuRow(items = state.generalItems)
-        }
+        item { SectionHeader("General") }
+        item { MenuRow(items = state.generalItems, navController = navController) }
 
-
-        // Placeholder Banner
         item {
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalBannerPlaceholder()
         }
 
-
-        // "Management" Section
-        item {
-            SectionHeader("Management Tools")
-        }
+        item { SectionHeader("Management Tools") }
         items(state.managementItems.chunked(4)) { rowItems ->
-            MenuRow(items = rowItems)
+            MenuRow(items = rowItems, navController = navController)
         }
 
+        item { SectionHeader("Communication") }
+        item { MenuRow(items = state.communicationItems, navController = navController) }
 
-        // "Communication" Section
-        item {
-            SectionHeader("Communication")
-        }
-        item {
-            MenuRow(items = state.communicationItems)
-        }
-
-
-        // "Support" Section
-        item {
-            SectionHeader("Support")
-        }
-        item {
-            MenuRow(items = state.supportItems)
-        }
+        item { SectionHeader("Support") }
+        item { MenuRow(items = state.supportItems, navController = navController) }
     }
 }
 
-
-/**
- * A composable for creating a consistent section header.
- */
 @Composable
 fun SectionHeader(title: String) {
     Spacer(modifier = Modifier.height(24.dp))
@@ -104,28 +71,24 @@ fun SectionHeader(title: String) {
     )
 }
 
-
-/**
- * A composable that creates a row of menu items, adding spacers if needed.
- */
 @Composable
-fun MenuRow(items: List<MenuItem>) {
+fun MenuRow(items: List<MenuItem>, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        for (item in items) {
+        items.forEach { item ->
             NewMenuItemCard(
                 modifier = Modifier.weight(1f),
                 menuItem = item,
-                onClick = { println("${item.title} clicked") }
+                onClick = { navController.navigate(item.route) }
             )
         }
         // Add spacers to align rows with fewer than 4 items
         if (items.size < 4) {
-            for (i in 0 until (4 - items.size)) {
+            repeat(4 - items.size) {
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
@@ -133,12 +96,6 @@ fun MenuRow(items: List<MenuItem>) {
     Spacer(modifier = Modifier.height(8.dp))
 }
 
-
-
-
-/**
- * A placeholder for the large horizontal banner, themed with your app's color.
- */
 @Composable
 fun HorizontalBannerPlaceholder() {
     Card(
@@ -147,7 +104,7 @@ fun HorizontalBannerPlaceholder() {
             .height(100.dp)
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50)) // Themed green color
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50))
     ) {
         Row(
             modifier = Modifier
@@ -172,12 +129,6 @@ fun HorizontalBannerPlaceholder() {
     }
 }
 
-
-
-
-/**
- * The composable for the individual menu item card, themed with your app's color.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewMenuItemCard(
@@ -195,7 +146,7 @@ fun NewMenuItemCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f) // Ensures the card is square
+                .aspectRatio(1f)
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -217,9 +168,6 @@ fun NewMenuItemCard(
         }
     }
 }
-
-
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

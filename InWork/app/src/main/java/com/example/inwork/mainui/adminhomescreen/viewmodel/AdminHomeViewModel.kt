@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-// Added AddEmployee screen state
 data class AdminHomeState(
     val screenStack: List<AdminScreen> = listOf(AdminScreen.Home),
     val hasLocationPermission: Boolean = false
@@ -42,10 +41,16 @@ class AdminHomeViewModel : ViewModel() {
     fun onEvent(event: AdminHomeEvent) {
         when (event) {
             is AdminHomeEvent.ScreenSelected -> {
-                // When selecting from the bottom bar, it's a primary navigation action,
-                // so we reset the stack to that screen.
-                if (_state.value.currentScreen != event.screen) {
-                    _state.update { it.copy(screenStack = listOf(event.screen)) }
+                // THIS IS THE FIX
+                // If the bottom bar is used to select Home, reset the stack.
+                // Otherwise, push the new screen onto the existing stack.
+                if (event.screen == AdminScreen.Home) {
+                    _state.update { it.copy(screenStack = listOf(AdminScreen.Home)) }
+                } else if (_state.value.currentScreen != event.screen) {
+                    _state.update {
+                        val newStack = it.screenStack.toMutableList().apply { add(event.screen) }
+                        it.copy(screenStack = newStack)
+                    }
                 }
             }
             is AdminHomeEvent.CreateNoticeClicked -> {

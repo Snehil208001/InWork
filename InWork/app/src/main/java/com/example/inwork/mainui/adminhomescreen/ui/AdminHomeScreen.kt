@@ -42,6 +42,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+// Import the Screen sealed class for navigation routes
+import com.example.inwork.core.navigation.Screen
 import com.example.inwork.core.utils.navigationbar.AdminBottomAppBar
 import com.example.inwork.core.utils.navigationbar.AdminSideBar
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
@@ -171,9 +173,11 @@ fun AdminHomeScreen(
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.ContactUs))
                         scope.launch { drawerState.close() }
                     },
+                    // THIS IS THE CORRECTED PART
                     onSettingsClick = {
-                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Settings))
                         scope.launch { drawerState.close() }
+                        // Use NavController to navigate, which correctly handles the back stack
+                        navController.navigate(Screen.AdminSettingsScreen.route)
                     }
                 )
             }
@@ -190,7 +194,6 @@ fun AdminHomeScreen(
                     }
                 )
             },
-            // REMOVED conditional logic. Bottom bar is now always visible.
             bottomBar = {
                 AdminBottomAppBar(
                     currentScreen = currentScreen,
@@ -199,7 +202,6 @@ fun AdminHomeScreen(
                     }
                 )
             },
-            // REMOVED conditional logic. FAB is now always visible.
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked) },
@@ -223,7 +225,6 @@ fun AdminHomeScreen(
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
-                // The banner is still conditional, which is correct.
                 if (!state.hasLocationPermission) {
                     PermissionBanner(onBannerClick = {
                         val hasForeground = ContextCompat.checkSelfPermission(
@@ -242,7 +243,9 @@ fun AdminHomeScreen(
 
                 when (currentScreen) {
                     is AdminScreen.Home -> {
-                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                        Column(modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White)) {
                             Text(text = "Admin Home Screen Content")
                         }
                     }
@@ -250,7 +253,9 @@ fun AdminHomeScreen(
                         AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                     }
                     is AdminScreen.SentNotice -> {
-                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                        Column(modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White)) {
                             Text(text = "Sent Notice Content - A list of sent notices would go here.")
                         }
                     }
@@ -276,12 +281,16 @@ fun AdminHomeScreen(
                         AddOfficeScreen(navController = navController)
                     }
                     is AdminScreen.AllOffices -> {
-                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                        Column(modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White)) {
                             Text(text = "All Offices Screen Content")
                         }
                     }
                     is AdminScreen.Dashboard -> {
-                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                        Column(modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White)) {
                             Text(text = "Dashboard Screen Content")
                         }
                     }
@@ -291,7 +300,8 @@ fun AdminHomeScreen(
                     is AdminScreen.ContactUs -> {
                         ContactUsContent()
                     }
-                    // CORRECTED the call to AdminSettingsScreen
+                    // The call to AdminSettingsScreen is still here, but it won't be used
+                    // for navigation from the sidebar anymore. It might be used by the bottom bar.
                     is AdminScreen.Settings -> {
                         AdminSettingsScreen()
                     }
