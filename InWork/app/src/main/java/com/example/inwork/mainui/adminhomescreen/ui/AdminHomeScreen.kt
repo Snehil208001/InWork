@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -228,7 +227,10 @@ fun AdminHomeScreen(
             },
             floatingActionButtonPosition = FabPosition.Center,
         ) { innerPadding ->
-            Box(
+            // **THE FIX IS APPLIED HERE**
+            // The Box has been replaced with a Column to ensure the banner
+            // is part of the layout flow and not drawn over.
+            Column(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
@@ -266,7 +268,7 @@ fun AdminHomeScreen(
                         }
                     }
                     is AdminScreen.AllMenu -> {
-                        AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
+                        // AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                     }
                     is AdminScreen.SentNotice -> {
                         Column(modifier = Modifier
