@@ -59,6 +59,7 @@ import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
+import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
 import kotlinx.coroutines.launch
 
 sealed class AdminScreen(val title: String) {
@@ -74,6 +75,7 @@ sealed class AdminScreen(val title: String) {
     object Dashboard : AdminScreen("Dashboard")
     object ContactUs : AdminScreen("Contact Us")
     object Settings : AdminScreen("Settings")
+    object Profile : AdminScreen("Profile")
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -143,8 +145,8 @@ fun AdminHomeScreen(
                         scope.launch { drawerState.close() }
                     },
                     onProfileClick = {
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Profile))
                         scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Profile.route)
                     },
                     onAllEmployeesClick = { /* TODO */ },
                     onSentNoticesClick = {
@@ -178,7 +180,7 @@ fun AdminHomeScreen(
                     onLogoutClick = {
                         scope.launch { drawerState.close() }
                         navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.Login.route) { // <-- CORRECTED
+                            popUpTo(Screen.Login.route) {
                                 inclusive = true
                             }
                         }
@@ -323,6 +325,9 @@ fun AdminHomeScreen(
                     }
                     is AdminScreen.Settings -> {
                         AdminSettingsScreen()
+                    }
+                    is AdminScreen.Profile -> {
+                        ProfileScreen(navController = navController)
                     }
                 }
             }

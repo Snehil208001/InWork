@@ -29,7 +29,7 @@ fun AdminSideBar(
     navController: NavController,
     companyName: String,
     email: String,
-    closeDrawer: () -> Unit, // <-- THIS IS THE FIX
+    closeDrawer: () -> Unit,
     onHomeClick: () -> Unit,
     onProfileClick: () -> Unit,
     onAllEmployeesClick: () -> Unit,
@@ -89,11 +89,7 @@ fun AdminSideBar(
         ) {
             item {
                 NavigationMenuItem(icon = Icons.Default.Home, text = "Home", onClick = onHomeClick)
-                // This now works because closeDrawer is defined
-                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile") {
-                    navController.navigate(Screen.Profile.route)
-                    closeDrawer()
-                }
+                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile", onClick = onProfileClick)
                 NavigationMenuItem(icon = Icons.Default.Groups, text = "All Employees", onClick = onAllEmployeesClick)
                 NavigationMenuItem(icon = Icons.Default.Send, text = "Sent Notices", onClick = onSentNoticesClick)
                 NavigationMenuItem(icon = Icons.Default.Event, text = "Add Event", onClick = onAddEventClick)

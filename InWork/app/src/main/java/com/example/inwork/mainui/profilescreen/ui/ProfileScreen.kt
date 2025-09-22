@@ -9,10 +9,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,33 +20,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-// Correct import for Coil 3
 import com.example.inwork.R
 import com.example.inwork.mainui.profilescreen.viewmodel.ProfileViewModel
+import com.example.inwork.ui.theme.CameraFabColor
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Define Colors to match the UI
+val ProfileGreen = Color(0xFFC8E6C9)
+val LightGreyBackground = Color(0xFFF5F5F5)
+
 @Composable
 fun ProfileScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
+    // Your existing logic - Unchanged
     val profileImageUri by profileViewModel.profileImageUri
     val name by profileViewModel.name
     val email by profileViewModel.email
     val companyId by profileViewModel.companyId
+    // Assuming 'department' can be used as 'Industry'
     val department by profileViewModel.department
     val designation by profileViewModel.designation
     val phone by profileViewModel.phone
-    val location by profileViewModel.location
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -54,111 +61,123 @@ fun ProfileScreen(
         profileViewModel.onProfileImageChange(uri)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Edit Profile", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* Handle saving data */ }) {
-                        Icon(Icons.Filled.Done, contentDescription = "Save Profile")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFC8E6C9)
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LightGreyBackground)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Profile Header Card
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .background(Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = ProfileGreen),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Image(
-                painter = if (profileImageUri != null) {
-                    rememberAsyncImagePainter(model = profileImageUri)
-                } else {
-                    painterResource(id = R.drawable.logopreview)
-                },
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(CircleShape)
-                    .clickable { imagePickerLauncher.launch("image/*") },
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = name,
-                onValueChange = { profileViewModel.name.value = it },
-                label = { Text("Full Name") },
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-            OutlinedTextField(
-                value = email,
-                onValueChange = { profileViewModel.email.value = it },
-                label = { Text("Email Address") },
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box {
+                    Image(
+                        painter = if (profileImageUri != null) {
+                            rememberAsyncImagePainter(model = profileImageUri)
+                        } else {
+                            painterResource(id = R.drawable.logopreview) // Fallback icon
+                        },
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .clickable { imagePickerLauncher.launch("image/*") },
+                        contentScale = ContentScale.Crop
+                    )
+                    FloatingActionButton(
+                        onClick = { imagePickerLauncher.launch("image/*") },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(40.dp),
+                        containerColor = CameraFabColor,
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                    ) {
+                        Icon(Icons.Default.PhotoCamera, contentDescription = "Change Picture", tint = Color.White)
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = name.ifEmpty { "Soumadeep" }, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(text = designation.ifEmpty { "Managing Director" }, fontSize = 16.sp, color = Color.DarkGray)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // User Details Cards - using your ViewModel state
+        ProfileInfoCard(icon = Icons.Default.Business, title = "Company ID", value = companyId.ifEmpty { "souma123" })
+        ProfileInfoCard(icon = Icons.Default.Apartment, title = "Company Name", value = "Apple") // Placeholder as it's not in ViewModel
+        ProfileInfoCard(icon = Icons.Default.Settings, title = "Industry", value = department.ifEmpty { "IT" })
+        ProfileInfoCard(icon = Icons.Default.Phone, title = "Mobile Number", value = phone.ifEmpty { "1234567890" })
+        ProfileInfoCard(icon = Icons.Default.Email, title = "Email", value = email.ifEmpty { "soumadeepbarik@gmail.com" })
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Action Buttons
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = { /* Handle logout */ },
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = ProfileGreen),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Divider(modifier = Modifier.padding(horizontal = 16.dp))
-
-            ProfileInfoItem(
-                label = "Company ID",
-                value = companyId,
-                onValueChange = { profileViewModel.companyId.value = it }
-            )
-            ProfileInfoItem(
-                label = "Department",
-                value = department,
-                onValueChange = { profileViewModel.department.value = it }
-            )
-            ProfileInfoItem(
-                label = "Designation",
-                value = designation,
-                onValueChange = { profileViewModel.designation.value = it }
-            )
-            ProfileInfoItem(
-                label = "Phone",
-                value = phone,
-                onValueChange = { profileViewModel.phone.value = it }
-            )
-            ProfileInfoItem(
-                label = "Location",
-                value = location,
-                onValueChange = { profileViewModel.location.value = it }
-            )
+                    .weight(1f)
+                    .height(50.dp)
+            ) {
+                Text("Logout", color = Color.Black, fontWeight = FontWeight.Bold)
+            }
+            TextButton(
+                onClick = { /* Handle update password */ },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Update Password?", color = Color.Gray)
+            }
         }
     }
 }
 
 @Composable
-fun ProfileInfoItem(label: String, value: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
+fun ProfileInfoCard(icon: ImageVector, title: String, value: String) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    )
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(imageVector = icon, contentDescription = title, tint = Color.Black)
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(text = title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+                Text(text = value, fontSize = 14.sp, color = Color.Gray)
+            }
+        }
+    }
 }
+
 
 @Preview(showBackground = true)
 @Composable
