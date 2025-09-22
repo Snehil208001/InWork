@@ -33,7 +33,8 @@ fun UserSideBar(
     onCheckEventClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onContactUsClick: () -> Unit,
-    onLogoutClick: () -> Unit // ADDED: The onLogoutClick parameter
+    onLogoutClick: () -> Unit,
+    onProfileClick: () -> Unit // ADDED: New parameter for profile click
 ) {
     Column(
         modifier = Modifier
@@ -81,7 +82,7 @@ fun UserSideBar(
         ) {
             item {
                 NavigationMenuItem(icon = Icons.Default.Home, text = "Home")
-                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile")
+                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile", onClick = onProfileClick) // MODIFIED: Added onClick
                 NavigationMenuItem(icon = Icons.Default.Article, text = "Notices")
                 NavigationMenuItem(icon = Icons.Default.AddLocationAlt, text = "Add geo", onClick = onAddGeoClick)
                 NavigationMenuItem(icon = Icons.Default.Event, text = "Check Event", onClick = onCheckEventClick)
@@ -101,7 +102,6 @@ fun UserSideBar(
             item {
                 NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us", onClick = onContactUsClick)
                 NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings", onClick = onSettingsClick)
-                // MODIFIED: Pass the onLogoutClick lambda to the Logout item
                 NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout", onClick = onLogoutClick)
                 NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account")
             }
@@ -153,6 +153,7 @@ fun UserSideBarPreview() {
         onCheckEventClick = {},
         onSettingsClick = {},
         onContactUsClick = {},
-        onLogoutClick = {} // ADDED: Pass a placeholder lambda for the preview
+        onLogoutClick = {},
+        onProfileClick = {} // Added placeholder lambda for the preview
     )
 }

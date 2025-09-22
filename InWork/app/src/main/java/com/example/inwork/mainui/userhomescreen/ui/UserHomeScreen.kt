@@ -43,6 +43,7 @@ import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.eventscreen.ui.CheckEventScreen
 import com.example.inwork.mainui.leavescreen.ui.PostLeaveScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
+import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeEvent
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeViewModel
 import com.google.android.gms.location.LocationServices
@@ -54,6 +55,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
+
 sealed class UserScreen(val title: String) {
     object Home : UserScreen("Home")
     object AddGeo : UserScreen("Add Geo")
@@ -61,7 +63,8 @@ sealed class UserScreen(val title: String) {
     object Notification : UserScreen("Notifications")
     object PostLeave : UserScreen("Post Leave")
     object CheckEvent : UserScreen("Check Event")
-    object ContactUs : UserScreen("Contact Us") // ADDED: New screen state
+    object ContactUs : UserScreen("Contact Us")
+    object Profile : UserScreen("Profile")
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -198,6 +201,10 @@ fun UserHomeScreen(
                                 inclusive = true
                             }
                         }
+                    },
+                    onProfileClick = {
+                        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Profile))
+                        scope.launch { drawerState.close() }
                     }
                 )
             }
@@ -264,7 +271,6 @@ fun UserHomeScreen(
                             Text(text = "User Home Screen Content")
                         }
                     }
-
                     is UserScreen.AddGeo -> {
                         AddGeoScreen(
                             hasLocationPermission = state.hasLocationPermission,
@@ -276,13 +282,11 @@ fun UserHomeScreen(
                             }
                         )
                     }
-
                     is UserScreen.Notices -> {
                         Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
                             Text(text = "Notices Screen Content")
                         }
                     }
-
                     is UserScreen.Notification -> {
                         NotificationScreen()
                     }
@@ -297,6 +301,9 @@ fun UserHomeScreen(
                     }
                     is UserScreen.ContactUs -> {
                         ContactUsContent()
+                    }
+                    is UserScreen.Profile -> {
+                        ProfileScreen(navController = navController)
                     }
                 }
             }
@@ -421,10 +428,10 @@ fun SosDialog(
     )
 }
 
-
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Preview(showSystemUi = true)
 @Composable
 fun UserHomeScreenPreview() {
+    // FIX: Provide a NavController for the preview
     UserHomeScreen(navController = rememberNavController())
 }
