@@ -135,11 +135,17 @@ fun AdminHomeScreen(
                     navController = navController,
                     companyName = "Apple",
                     email = "soumadeepbarik@gmail.com",
+                    closeDrawer = {
+                        scope.launch { drawerState.close() }
+                    },
                     onHomeClick = {
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Home))
                         scope.launch { drawerState.close() }
                     },
-                    onProfileClick = { /* TODO */ },
+                    onProfileClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Screen.Profile.route)
+                    },
                     onAllEmployeesClick = { /* TODO */ },
                     onSentNoticesClick = {
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.SentNotice))
@@ -172,7 +178,7 @@ fun AdminHomeScreen(
                     onLogoutClick = {
                         scope.launch { drawerState.close() }
                         navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.adminHome.route) {
+                            popUpTo(Screen.Login.route) { // <-- CORRECTED
                                 inclusive = true
                             }
                         }
@@ -227,9 +233,6 @@ fun AdminHomeScreen(
             },
             floatingActionButtonPosition = FabPosition.Center,
         ) { innerPadding ->
-            // **THE FIX IS APPLIED HERE**
-            // The Box has been replaced with a Column to ensure the banner
-            // is part of the layout flow and not drawn over.
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -268,7 +271,7 @@ fun AdminHomeScreen(
                         }
                     }
                     is AdminScreen.AllMenu -> {
-                        // AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
+                        AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                     }
                     is AdminScreen.SentNotice -> {
                         Column(modifier = Modifier

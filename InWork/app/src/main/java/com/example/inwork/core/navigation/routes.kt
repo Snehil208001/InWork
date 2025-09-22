@@ -38,4 +38,6 @@ sealed class Screen(val route: String) {
     // Other existing screens
     data object OfficeLocationPicker : Screen("OfficeLocationPicker")
     data object GrantPermissionsScreen: Screen("grant_permissions_screen")
+
+
 }

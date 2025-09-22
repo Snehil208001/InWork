@@ -24,6 +24,7 @@ import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.permissionscreen.ui.GrantPermissionsScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
+import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
 import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
 import com.example.inwork.mainui.userhomescreen.ui.UserHomeScreen
@@ -77,7 +78,9 @@ fun MyAppNav(
         }
 
         // Placeholders for Future Screens
-        composable(Screen.Profile.route) { Text(text = "Profile Screen") }
+        composable(Screen.Profile.route) {
+            ProfileScreen(navController = navController)
+        }
         composable(Screen.News.route) { Text(text = "News Screen") }
         composable(Screen.Weather.route) { Text(text = "Weather Screen") }
         composable(Screen.AllEmployees.route) { Text(text = "All Employees Screen") }

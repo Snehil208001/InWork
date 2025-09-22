@@ -26,14 +26,15 @@ import androidx.navigation.NavController
 
 @Composable
 fun AdminSideBar(
-    navController: NavController, // ADD NavController parameter
+    navController: NavController,
     companyName: String,
     email: String,
+    closeDrawer: () -> Unit, // <-- THIS IS THE FIX
     onHomeClick: () -> Unit,
     onProfileClick: () -> Unit,
     onAllEmployeesClick: () -> Unit,
     onSentNoticesClick: () -> Unit,
-    onCreateNoticeClick: () -> Unit, // ADD onCreateNoticeClick parameter
+    onCreateNoticeClick: () -> Unit,
     onAddEventClick: () -> Unit,
     onAddEmployeeClick: () -> Unit,
     onAddOfficesClick: () -> Unit,
@@ -42,7 +43,7 @@ fun AdminSideBar(
     onLogoutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
     onContactUsClick: () -> Unit,
-    onSettingsClick: () -> Unit // ADD onSettingsClick parameter
+    onSettingsClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -88,7 +89,11 @@ fun AdminSideBar(
         ) {
             item {
                 NavigationMenuItem(icon = Icons.Default.Home, text = "Home", onClick = onHomeClick)
-                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile", onClick = onProfileClick)
+                // This now works because closeDrawer is defined
+                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile") {
+                    navController.navigate(Screen.Profile.route)
+                    closeDrawer()
+                }
                 NavigationMenuItem(icon = Icons.Default.Groups, text = "All Employees", onClick = onAllEmployeesClick)
                 NavigationMenuItem(icon = Icons.Default.Send, text = "Sent Notices", onClick = onSentNoticesClick)
                 NavigationMenuItem(icon = Icons.Default.Event, text = "Add Event", onClick = onAddEventClick)
@@ -99,7 +104,6 @@ fun AdminSideBar(
                 NavigationMenuItem(icon = Icons.Default.Work, text = "Employee Status")
                 NavigationMenuItem(icon = Icons.Default.CalendarToday, text = "Leave Requests")
                 NavigationMenuItem(icon = Icons.Default.Assessment, text = "Monthly Reports")
-                // UPDATED the "Send Notice" item to "Create Notice" and used the new onClick lambda
                 NavigationMenuItem(icon = Icons.Default.Add, text = "Create Notice", onClick = onCreateNoticeClick)
                 NavigationMenuItem(icon = Icons.Default.PersonAdd, text = "Add Employee", onClick = onAddEmployeeClick)
                 NavigationMenuItem(icon = Icons.Default.Business, text = "Add Offices", onClick = onAddOfficesClick)
@@ -112,7 +116,6 @@ fun AdminSideBar(
             item { NavigationHeader(text = "Log Out") }
             item {
                 NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us", onClick = onContactUsClick)
-                // UPDATE the "Settings" item to use the new onClick lambda
                 NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings", onClick = onSettingsClick)
                 NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout", onClick = onLogoutClick)
                 NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account", onClick = onDeleteAccountClick)
