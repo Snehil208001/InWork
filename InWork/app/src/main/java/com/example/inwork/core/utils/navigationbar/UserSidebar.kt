@@ -34,7 +34,8 @@ fun UserSideBar(
     onSettingsClick: () -> Unit,
     onContactUsClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onProfileClick: () -> Unit // ADDED: New parameter for profile click
+    onProfileClick: () -> Unit,
+    onUploadPhotoClick: () -> Unit // ADDED: New parameter for photo upload click
 ) {
     Column(
         modifier = Modifier
@@ -82,7 +83,7 @@ fun UserSideBar(
         ) {
             item {
                 NavigationMenuItem(icon = Icons.Default.Home, text = "Home")
-                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile", onClick = onProfileClick) // MODIFIED: Added onClick
+                NavigationMenuItem(icon = Icons.Default.Person, text = "Profile", onClick = onProfileClick)
                 NavigationMenuItem(icon = Icons.Default.Article, text = "Notices")
                 NavigationMenuItem(icon = Icons.Default.AddLocationAlt, text = "Add geo", onClick = onAddGeoClick)
                 NavigationMenuItem(icon = Icons.Default.Event, text = "Check Event", onClick = onCheckEventClick)
@@ -94,7 +95,12 @@ fun UserSideBar(
 
             item { NavigationHeader(text = "Attendance") }
             item {
-                NavigationMenuItem(icon = Icons.Default.PhotoCamera, text = "Upload Your Photo")
+                // MODIFIED: Added onClick for photo upload
+                NavigationMenuItem(
+                    icon = Icons.Default.PhotoCamera,
+                    text = "Upload Your Photo",
+                    onClick = onUploadPhotoClick
+                )
                 NavigationMenuItem(icon = Icons.Default.Face, text = "Face Attendance")
             }
 
@@ -154,6 +160,7 @@ fun UserSideBarPreview() {
         onSettingsClick = {},
         onContactUsClick = {},
         onLogoutClick = {},
-        onProfileClick = {} // Added placeholder lambda for the preview
+        onProfileClick = {},
+        onUploadPhotoClick = {} // Added placeholder lambda for the preview
     )
 }

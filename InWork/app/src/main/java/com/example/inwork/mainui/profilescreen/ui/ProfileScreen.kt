@@ -65,6 +65,7 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LightGreyBackground)
+            .statusBarsPadding() // The fix is applied here
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -106,23 +107,52 @@ fun ProfileScreen(
                         containerColor = CameraFabColor,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp)
                     ) {
-                        Icon(Icons.Default.PhotoCamera, contentDescription = "Change Picture", tint = Color.White)
+                        Icon(
+                            Icons.Default.PhotoCamera,
+                            contentDescription = "Change Picture",
+                            tint = Color.White
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = name.ifEmpty { "Soumadeep" }, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(text = designation.ifEmpty { "Managing Director" }, fontSize = 16.sp, color = Color.DarkGray)
+                Text(
+                    text = name.ifEmpty { "Soumadeep" },
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Text(
+                    text = designation.ifEmpty { "Managing Director" },
+                    fontSize = 16.sp,
+                    color = Color.DarkGray
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // User Details Cards - using your ViewModel state
-        ProfileInfoCard(icon = Icons.Default.Business, title = "Company ID", value = companyId.ifEmpty { "souma123" })
-        ProfileInfoCard(icon = Icons.Default.Apartment, title = "Company Name", value = "Apple") // Placeholder as it's not in ViewModel
-        ProfileInfoCard(icon = Icons.Default.Settings, title = "Industry", value = department.ifEmpty { "IT" })
-        ProfileInfoCard(icon = Icons.Default.Phone, title = "Mobile Number", value = phone.ifEmpty { "1234567890" })
-        ProfileInfoCard(icon = Icons.Default.Email, title = "Email", value = email.ifEmpty { "soumadeepbarik@gmail.com" })
+        ProfileInfoCard(
+            icon = Icons.Default.Business,
+            title = "Company ID",
+            value = companyId.ifEmpty { "souma123" })
+        ProfileInfoCard(
+            icon = Icons.Default.Apartment,
+            title = "Company Name",
+            value = "Apple"
+        ) // Placeholder as it's not in ViewModel
+        ProfileInfoCard(
+            icon = Icons.Default.Settings,
+            title = "Industry",
+            value = department.ifEmpty { "IT" })
+        ProfileInfoCard(
+            icon = Icons.Default.Phone,
+            title = "Mobile Number",
+            value = phone.ifEmpty { "1234567890" })
+        ProfileInfoCard(
+            icon = Icons.Default.Email,
+            title = "Email",
+            value = email.ifEmpty { "soumadeepbarik@gmail.com" })
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -135,7 +165,11 @@ fun ProfileScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                onClick = { /* Handle logout */ },
+                onClick = {
+                    navController.navigate("login") {
+                        popUpTo("profile") { inclusive = true }
+                    }
+                },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(containerColor = ProfileGreen),
                 modifier = Modifier
@@ -171,7 +205,12 @@ fun ProfileInfoCard(icon: ImageVector, title: String, value: String) {
             Icon(imageVector = icon, contentDescription = title, tint = Color.Black)
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(text = title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
                 Text(text = value, fontSize = 14.sp, color = Color.Gray)
             }
         }

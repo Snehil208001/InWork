@@ -3,14 +3,25 @@ package com.example.inwork.core.navigation
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.material3.Text
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.R
+import com.example.inwork.core.utils.navigationbar.TopAppBar
 import com.example.inwork.mainui.addemployeescreen.ui.AddEmployeeScreen
 import com.example.inwork.mainui.addofficescreen.ui.AddOfficeScreen
 import com.example.inwork.mainui.addofficescreen.ui.OfficeLocationPickerScreen
@@ -21,6 +32,7 @@ import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
 import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
+import com.example.inwork.mainui.imageuploadscreen.ui.ImageUploadScreen
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.permissionscreen.ui.GrantPermissionsScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
@@ -54,6 +66,11 @@ fun MyAppNav(
         composable(Screen.OfficeLocationPicker.route) { OfficeLocationPickerScreen(navController = navController) }
         composable(Screen.GrantPermissionsScreen.route) { GrantPermissionsScreen() }
         composable(Screen.AdminSettingsScreen.route) { AdminSettingsScreen() }
+
+        // ADDED: Navigation to ImageUploadScreen
+        composable(Screen.ImageUpload.route) {
+            ImageUploadScreen(navController = navController)
+        }
 
         // Navigation to Existing Screens
         composable(Screen.AddOffice.route) {

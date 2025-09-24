@@ -34,10 +34,9 @@ sealed class Screen(val route: String) {
     data object MonthlyReports : Screen("monthly_reports")
     data object AllOffices : Screen("all_offices")
     data object ScreenTime : Screen("screen_time")
+    data object ImageUpload : Screen("image_upload") // ADDED: New route for Image Upload
 
     // Other existing screens
     data object OfficeLocationPicker : Screen("OfficeLocationPicker")
     data object GrantPermissionsScreen: Screen("grant_permissions_screen")
-
-
 }

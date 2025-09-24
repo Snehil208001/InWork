@@ -205,6 +205,11 @@ fun UserHomeScreen(
                     onProfileClick = {
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Profile))
                         scope.launch { drawerState.close() }
+                    },
+                    // ADDED: This line fixes the error
+                    onUploadPhotoClick = {
+                        navController.navigate(Screen.ImageUpload.route)
+                        scope.launch { drawerState.close() }
                     }
                 )
             }
@@ -432,6 +437,5 @@ fun SosDialog(
 @Preview(showSystemUi = true)
 @Composable
 fun UserHomeScreenPreview() {
-    // FIX: Provide a NavController for the preview
     UserHomeScreen(navController = rememberNavController())
 }

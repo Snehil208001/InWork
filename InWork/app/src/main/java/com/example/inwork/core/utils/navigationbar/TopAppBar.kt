@@ -82,3 +82,5 @@ fun InWorkTopAppBar(
 fun InWorkTopAppBarPreview() {
     InWorkTopAppBar(title = "Preview Title", onNavigationIconClick = {})
 }
+
+annotation class TopAppBar
