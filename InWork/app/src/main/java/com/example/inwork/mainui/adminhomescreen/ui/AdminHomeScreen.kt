@@ -1,6 +1,5 @@
 package com.example.inwork.mainui.adminhomescreen.ui
 
-// ✅ Import the new AI feature and its ViewModel
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -59,14 +58,13 @@ import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
 import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
 import com.example.inwork.mainui.aifeature.ui.DraggableAIFab
+import com.example.inwork.mainui.aifeature.viewmodel.GeminiViewModel
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
-import com.example.inwork.mainui.viewmodels.GeminiViewModel
 import kotlinx.coroutines.launch
 
-// This sealed class remains unchanged
 sealed class AdminScreen(val title: String) {
     object Home : AdminScreen("Home")
     object AllMenu : AdminScreen("All Menu")
@@ -89,7 +87,6 @@ sealed class AdminScreen(val title: String) {
 fun AdminHomeScreen(
     navController: NavController,
     viewModel: AdminHomeViewModel = hiltViewModel(),
-    // ✅ Get an instance of the GeminiViewModel
     geminiViewModel: GeminiViewModel = hiltViewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -98,7 +95,6 @@ fun AdminHomeScreen(
     val currentScreen = state.currentScreen
     val context = LocalContext.current
 
-    // All your existing handlers and permission logic remain unchanged
     BackHandler(enabled = state.screenStack.size > 1) {
         viewModel.onEvent(AdminHomeEvent.NavigateBack)
     }
@@ -141,7 +137,6 @@ fun AdminHomeScreen(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                // Your AdminSideBar remains unchanged
                 AdminSideBar(
                     navController = navController,
                     companyName = "Apple",
@@ -203,143 +198,142 @@ fun AdminHomeScreen(
             }
         }
     ) {
-        Scaffold(
-            topBar = {
-                InWorkTopAppBar(
-                    title = currentScreen.title,
-                    onNavigationIconClick = {
-                        scope.launch {
-                            drawerState.apply { if (isClosed) open() else close() }
+        // ✅ CORRECTED: This Box now wraps both the Scaffold and the DraggableAIFab
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                topBar = {
+                    InWorkTopAppBar(
+                        title = currentScreen.title,
+                        onNavigationIconClick = {
+                            scope.launch {
+                                drawerState.apply { if (isClosed) open() else close() }
+                            }
                         }
-                    }
-                )
-            },
-            bottomBar = {
-                AdminBottomAppBar(
-                    currentScreen = currentScreen,
-                    onScreenSelected = { newScreen ->
-                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(newScreen))
-                    }
-                )
-            },
-            floatingActionButton = {
-                // Your original FAB remains unchanged
-                FloatingActionButton(
-                    onClick = { viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked) },
-                    modifier = Modifier.offset(y = 60.dp),
-                    shape = CircleShape,
-                    containerColor = Color(0xFF4CAF50),
-                    contentColor = Color.Black,
-                    elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Create Notice",
-                        modifier = Modifier.size(32.dp)
                     )
-                }
-            },
-            floatingActionButtonPosition = FabPosition.Center,
-        ) { innerPadding ->
-            // ✅ Wrap the content in a Box to allow the AI FAB to float on top
-            Box(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-            ) {
-                // This Column is your original screen content
-                Column(modifier = Modifier.fillMaxSize()) {
-                    if (!state.hasLocationPermission) {
-                        LocationPermissionBanner(onBannerClick = {
-                            val hasForeground = ContextCompat.checkSelfPermission(
-                                context, Manifest.permission.ACCESS_FINE_LOCATION
-                            ) == PackageManager.PERMISSION_GRANTED
-                            if (hasForeground) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                                }
-                            } else {
-                                foregroundLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                            }
-                        })
+                },
+                bottomBar = {
+                    AdminBottomAppBar(
+                        currentScreen = currentScreen,
+                        onScreenSelected = { newScreen ->
+                            viewModel.onEvent(AdminHomeEvent.ScreenSelected(newScreen))
+                        }
+                    )
+                },
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { viewModel.onEvent(AdminHomeEvent.CreateNoticeClicked) },
+                        modifier = Modifier.offset(y = 60.dp),
+                        shape = CircleShape,
+                        containerColor = Color(0xFF4CAF50),
+                        contentColor = Color.Black,
+                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Create Notice",
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
-
-                    // The when statement and all its content remain unchanged
-                    when (currentScreen) {
-                        is AdminScreen.Home -> {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.White)
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "Welcome to the Admin Dashboard!",
-                                    style = MaterialTheme.typography.headlineLarge
-                                )
-                            }
-                        }
-                        // ... all other 'when' cases are unchanged
-                        is AdminScreen.AllMenu -> {
-                            AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
-                        }
-                        is AdminScreen.SentNotice -> {
-                            Column(modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.White)) {
-                                Text(text = "Sent Notice Content - A list of sent notices would go here.")
-                            }
-                        }
-                        is AdminScreen.CreateNotice -> {
-                            SendNoticeScreen { title, notice ->
-                                println("Sending Notice -> Title: $title, Notice: $notice")
-                                viewModel.onEvent(AdminHomeEvent.NavigateBack)
-                            }
-                        }
-                        is AdminScreen.AddEvent -> {
-                            AddEventScreen(navController = navController)
-                        }
-                        is AdminScreen.AddEmployee -> {
-                            AddEmployeeScreen(onNavigateBack = {
-                                viewModel.onEvent(AdminHomeEvent.NavigateBack)
+                },
+                floatingActionButtonPosition = FabPosition.Center,
+            ) { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (!state.hasLocationPermission) {
+                            LocationPermissionBanner(onBannerClick = {
+                                val hasForeground = ContextCompat.checkSelfPermission(
+                                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                                if (hasForeground) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                                    }
+                                } else {
+                                    foregroundLocationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                }
                             })
                         }
-                        is AdminScreen.AddOffice -> {
-                            AddOfficeScreen(navController = navController)
-                        }
-                        is AdminScreen.AllOffices -> {
-                            Column(modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.White)) {
-                                Text(text = "All Offices Screen Content")
+
+                        when (currentScreen) {
+                            is AdminScreen.Home -> {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.White)
+                                        .padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Welcome to the Admin Dashboard!",
+                                        style = MaterialTheme.typography.headlineLarge
+                                    )
+                                }
                             }
-                        }
-                        is AdminScreen.Dashboard -> {
-                            Column(modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.White)) {
-                                Text(text = "Dashboard Screen Content")
+                            is AdminScreen.AllMenu -> {
+                                // Assuming AllMenuContent exists and is correctly defined
+                                // AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                             }
-                        }
-                        is AdminScreen.Notification -> {
-                            NotificationScreen()
-                        }
-                        is AdminScreen.ContactUs -> {
-                            ContactUsContent()
-                        }
-                        is AdminScreen.Settings -> {
-                            AdminSettingsScreen()
-                        }
-                        is AdminScreen.Profile -> {
-                            ProfileScreen(navController = navController)
+                            is AdminScreen.SentNotice -> {
+                                Column(modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.White)) {
+                                    Text(text = "Sent Notice Content - A list of sent notices would go here.")
+                                }
+                            }
+                            is AdminScreen.CreateNotice -> {
+                                SendNoticeScreen { title, notice ->
+                                    println("Sending Notice -> Title: $title, Notice: $notice")
+                                    viewModel.onEvent(AdminHomeEvent.NavigateBack)
+                                }
+                            }
+                            is AdminScreen.AddEvent -> {
+                                AddEventScreen(navController = navController)
+                            }
+                            is AdminScreen.AddEmployee -> {
+                                AddEmployeeScreen(onNavigateBack = {
+                                    viewModel.onEvent(AdminHomeEvent.NavigateBack)
+                                })
+                            }
+                            is AdminScreen.AddOffice -> {
+                                AddOfficeScreen(navController = navController)
+                            }
+                            is AdminScreen.AllOffices -> {
+                                Column(modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.White)) {
+                                    Text(text = "All Offices Screen Content")
+                                }
+                            }
+                            is AdminScreen.Dashboard -> {
+                                Column(modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.White)) {
+                                    Text(text = "Dashboard Screen Content")
+                                }
+                            }
+                            is AdminScreen.Notification -> {
+                                NotificationScreen()
+                            }
+                            is AdminScreen.ContactUs -> {
+                                ContactUsContent()
+                            }
+                            is AdminScreen.Settings -> {
+                                AdminSettingsScreen()
+                            }
+                            is AdminScreen.Profile -> {
+                                ProfileScreen(navController = navController)
+                            }
                         }
                     }
                 }
-                // ✅ Add the new draggable AI FAB here. It will float above all other content.
-                DraggableAIFab(geminiViewModel = geminiViewModel)
             }
+            // ✅ DraggableAIFab is now a sibling to the Scaffold, so it will be drawn on top.
+            DraggableAIFab(geminiViewModel = geminiViewModel)
         }
     }
 }

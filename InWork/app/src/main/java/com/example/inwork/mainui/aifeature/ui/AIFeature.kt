@@ -1,64 +1,79 @@
 package com.example.inwork.mainui.aifeature.ui
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.example.inwork.mainui.viewmodels.GeminiViewModel
-import kotlinx.coroutines.delay
+import com.example.inwork.mainui.aifeature.viewmodel.ChatMessage
+import com.example.inwork.mainui.aifeature.viewmodel.GeminiViewModel
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DraggableAIFab(geminiViewModel: GeminiViewModel) {
     var showBottomSheet by remember { mutableStateOf(false) }
+    // Re-added state for tracking the FAB's offset
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
+    // Outer Box positions the FAB in the bottom-right corner initially.
     Box(
-        modifier = Modifier
-            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-            .padding(16.dp) // Add some padding so it doesn't stick to the edges
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    offsetX += dragAmount.x
-                    offsetY += dragAmount.y
-                }
-            }
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomEnd
     ) {
-        FloatingActionButton(
-            onClick = { showBottomSheet = true },
-            containerColor = MaterialTheme.colorScheme.primary,
-            elevation = FloatingActionButtonDefaults.elevation(8.dp)
+        // This inner Box now handles the dragging logic again.
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                .padding(16.dp) // Padding is applied here to keep the FAB from the edges
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                    }
+                }
         ) {
-            Icon(Icons.Filled.AutoAwesome, contentDescription = "AI Assistant")
+            FloatingActionButton(
+                onClick = { showBottomSheet = true },
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Filled.AutoAwesome, contentDescription = "AI Assistant")
+            }
         }
     }
 
+
     if (showBottomSheet) {
+        val sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+
         ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false },
-            sheetState = rememberModalBottomSheetState(),
+            onDismissRequest = {
+                showBottomSheet = false
+                geminiViewModel.clearConversation()
+            },
+            sheetState = sheetState,
         ) {
             AIPromptUI(geminiViewModel = geminiViewModel)
         }
@@ -67,98 +82,103 @@ fun DraggableAIFab(geminiViewModel: GeminiViewModel) {
 
 @Composable
 fun AIPromptUI(geminiViewModel: GeminiViewModel) {
-    val response by geminiViewModel.responseText.collectAsState()
-    var prompt by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
+    val chatHistory by geminiViewModel.chatHistory.collectAsState()
+    var userPrompt by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-    // Typing effect for the response
-    var displayedResponse by remember { mutableStateOf("") }
-    LaunchedEffect(response) {
-        if (!isLoading) {
-            response.forEachIndexed { index, char ->
-                displayedResponse = response.substring(0, index + 1)
-                delay(20) // Adjust delay for typing speed
+    LaunchedEffect(chatHistory) {
+        coroutineScope.launch {
+            if (chatHistory.isNotEmpty()) {
+                listState.animateScrollToItem(chatHistory.lastIndex)
             }
         }
-    }
-
-    LaunchedEffect(response) {
-        isLoading = false
     }
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxWidth()
-            .heightIn(min = 200.dp, max = 400.dp), // Set min and max height
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxHeight(0.9f)
+            .padding(horizontal = 16.dp)
+            .imePadding()
     ) {
-        // Title and close button
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Ask Gemini", style = MaterialTheme.typography.headlineSmall)
-        }
-        Spacer(Modifier.height(16.dp))
-
-        // Response area
-        Box(
+        Text(
+            "Ask Me Anything",
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                .padding(16.dp)
-                .verticalScroll(scrollState),
-            contentAlignment = Alignment.CenterStart
+                .padding(vertical = 16.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (displayedResponse.isBlank()) {
-                Text(
-                    text = "Ask me anything...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else {
-                Text(
-                    text = displayedResponse,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            items(chatHistory) { message ->
+                ChatMessageBubble(message = message)
             }
         }
-        Spacer(Modifier.height(16.dp))
 
-        // Prompt input field and send button
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
-                value = prompt,
-                onValueChange = { prompt = it },
-                label = { Text("Enter your prompt") },
+                value = userPrompt,
+                onValueChange = { userPrompt = it },
+                placeholder = { Text(" Feel Free To Ask Anything....") },
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(24.dp)
             )
             Spacer(Modifier.width(8.dp))
-            Button(
+            IconButton(
                 onClick = {
-                    if (prompt.isNotBlank()) {
-                        isLoading = true
-                        displayedResponse = "" // Clear previous response immediately
-                        geminiViewModel.generateContent(prompt)
+                    if (userPrompt.isNotBlank()) {
+                        geminiViewModel.generateContent(userPrompt)
+                        userPrompt = ""
                     }
                 },
-                enabled = prompt.isNotBlank() && !isLoading,
-                modifier = Modifier.height(56.dp) // Match the height of the TextField
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
             ) {
-                Icon(Icons.Filled.Send, contentDescription = "Send")
+                Icon(
+                    Icons.Filled.Send,
+                    contentDescription = "Send",
+                    tint = Color.White
+                )
             }
+        }
+    }
+}
+
+@Composable
+fun ChatMessageBubble(message: ChatMessage) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = if (message.isFromUser) Arrangement.End else Arrangement.Start
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = if (message.isFromUser) 16.dp else 0.dp,
+                        bottomEnd = if (message.isFromUser) 0.dp else 16.dp
+                    )
+                )
+                .background(
+                    if (message.isFromUser) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.secondaryContainer
+                )
+                .padding(12.dp)
+        ) {
+            Text(text = message.text)
         }
     }
 }
