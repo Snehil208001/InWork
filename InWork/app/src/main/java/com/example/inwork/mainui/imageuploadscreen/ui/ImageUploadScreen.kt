@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,9 +32,10 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.example.inwork.R
-import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.mainui.imageuploadscreen.viewmodel.ImageUploadViewModel
 import com.example.inwork.mainui.imageuploadscreen.viewmodel.UploadState
+import com.example.inwork.mainui.userhomescreen.ui.UserScreen
+import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeEvent
 
 @Composable
 fun ImageUploadScreen(
@@ -77,7 +77,11 @@ fun ImageUploadScreen(
             is UploadState.Success -> {
                 Toast.makeText(context, "Image uploaded successfully!", Toast.LENGTH_LONG).show()
                 viewModel.resetState()
-                navController.popBackStack()
+                // Instead of popBackStack, we can navigate back to the home screen
+                // This assumes you have a reference to the UserHomeViewModel,
+                // or you can pass an event up to the parent composable.
+                // For simplicity, this example will just clear the image.
+                imageUri = null
             }
             is UploadState.Error -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
@@ -87,89 +91,85 @@ fun ImageUploadScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            InWorkTopAppBar(
-                title = "Image Upload",
-                onNavigationIconClick = { navController.popBackStack() }
-            )
-        },
-        content = { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .background(Color(0xFFE6F5E6))
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(250.dp)
-                        .background(Color.White)
-                        .border(2.dp, Color(0xFF00B300))
-                        .clickable {
-                            when (ContextCompat.checkSelfPermission(context, permissionToRequest)) {
-                                PackageManager.PERMISSION_GRANTED -> {
-                                    val cropOptions = CropImageContractOptions(null, CropImageOptions())
-                                    imageCropLauncher.launch(cropOptions)
-                                }
-                                else -> {
-                                    permissionLauncher.launch(permissionToRequest)
-                                }
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (imageUri != null) {
-                        AsyncImage(
-                            model = imageUri,
-                            contentDescription = "Selected Image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(id = R.drawable.logopreview),
-                            contentDescription = "Logo",
-                            modifier = Modifier.size(200.dp)
-                        )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFE6F5E6))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .background(Color.White)
+                .border(2.dp, Color(0xFF00B300))
+                .clickable {
+                    when (ContextCompat.checkSelfPermission(context, permissionToRequest)) {
+                        PackageManager.PERMISSION_GRANTED -> {
+                            val cropOptions = CropImageContractOptions(null, CropImageOptions())
+                            imageCropLauncher.launch(cropOptions)
+                        }
+                        else -> {
+                            permissionLauncher.launch(permissionToRequest)
+                        }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = { viewModel.uploadImage(context, imageUri) },
-                    enabled = uploadState !is UploadState.Uploading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B300))
-                ) {
-                    if (uploadState is UploadState.Uploading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = Color.White
-                        )
-                    } else {
-                        Text(text = "Upload", color = Color.White, fontSize = 18.sp)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { navController.popBackStack() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB3E6B3))
-                ) {
-                    Text(text = "Back", color = Color.Black, fontSize = 18.sp)
-                }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            if (imageUri != null) {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = "Selected Image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.logopreview),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(200.dp)
+                )
             }
         }
-    )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = { viewModel.uploadImage(context, imageUri) },
+            enabled = uploadState !is UploadState.Uploading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B300))
+        ) {
+            if (uploadState is UploadState.Uploading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White
+                )
+            } else {
+                Text(text = "Upload", color = Color.White, fontSize = 18.sp)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // This button is optional now, as the user can navigate away
+        // using the bottom navigation or the side drawer.
+        // You can leave it or remove it based on your preference.
+        /*
+        Button(
+            onClick = {
+                // You might want to navigate back to the home screen
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB3E6B3))
+        ) {
+            Text(text = "Back", color = Color.Black, fontSize = 18.sp)
+        }
+        */
+    }
 }

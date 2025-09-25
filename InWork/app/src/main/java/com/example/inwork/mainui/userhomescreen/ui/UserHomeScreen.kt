@@ -41,6 +41,7 @@ import com.example.inwork.core.utils.navigationbar.UserBottomAppBar
 import com.example.inwork.core.utils.navigationbar.UserSideBar
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.eventscreen.ui.CheckEventScreen
+import com.example.inwork.mainui.imageuploadscreen.ui.ImageUploadScreen
 import com.example.inwork.mainui.leavescreen.ui.PostLeaveScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
@@ -65,6 +66,7 @@ sealed class UserScreen(val title: String) {
     object CheckEvent : UserScreen("Check Event")
     object ContactUs : UserScreen("Contact Us")
     object Profile : UserScreen("Profile")
+    object ImageUpload : UserScreen("Upload Photo") // Corrected Line
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -206,9 +208,8 @@ fun UserHomeScreen(
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Profile))
                         scope.launch { drawerState.close() }
                     },
-                    // ADDED: This line fixes the error
-                    onUploadPhotoClick = {
-                        navController.navigate(Screen.ImageUpload.route)
+                    onUploadPhotoClick = { // Corrected Block
+                        viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.ImageUpload))
                         scope.launch { drawerState.close() }
                     }
                 )
@@ -309,6 +310,9 @@ fun UserHomeScreen(
                     }
                     is UserScreen.Profile -> {
                         ProfileScreen(navController = navController)
+                    }
+                    is UserScreen.ImageUpload -> { // Corrected Block
+                        ImageUploadScreen(navController = navController)
                     }
                 }
             }
