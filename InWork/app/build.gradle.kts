@@ -108,4 +108,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.2.0")
     // Coil for Image Loading (using v2 for stability with these dependencies)
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    //cropper
+    implementation("com.vanniktech:android-image-cropper:4.5.0")
 }

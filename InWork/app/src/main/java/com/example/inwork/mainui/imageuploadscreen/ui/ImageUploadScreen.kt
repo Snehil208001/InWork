@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,6 +29,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
 import com.example.inwork.R
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
 import com.example.inwork.mainui.imageuploadscreen.viewmodel.ImageUploadViewModel
@@ -44,34 +46,32 @@ fun ImageUploadScreen(
     val context = LocalContext.current
     val uploadState by viewModel.uploadState.collectAsState()
 
-    // Define the permission to request based on Android version
     val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_IMAGES
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE
     }
 
-    // Launcher for the image picker
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        imageUri = uri
+    val imageCropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
+        if (result.isSuccessful) {
+            imageUri = result.uriContent
+        } else {
+            val exception = result.error
+            Toast.makeText(context, "Image Cropping failed: ${exception?.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    // Launcher for the permission request
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
+        contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Permission granted, launch the image picker
-            imagePickerLauncher.launch("image/*")
+            val cropOptions = CropImageContractOptions(null, CropImageOptions())
+            imageCropLauncher.launch(cropOptions)
         } else {
-            // Permission denied
             Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Observer for the upload state
     LaunchedEffect(uploadState) {
         when (val state = uploadState) {
             is UploadState.Success -> {
@@ -91,7 +91,7 @@ fun ImageUploadScreen(
         topBar = {
             InWorkTopAppBar(
                 title = "Image Upload",
-                onNavigationIconClick = { /* ... */ }
+                onNavigationIconClick = { navController.popBackStack() }
             )
         },
         content = { padding ->
@@ -110,14 +110,12 @@ fun ImageUploadScreen(
                         .background(Color.White)
                         .border(2.dp, Color(0xFF00B300))
                         .clickable {
-                            // Check for permission before launching
                             when (ContextCompat.checkSelfPermission(context, permissionToRequest)) {
                                 PackageManager.PERMISSION_GRANTED -> {
-                                    // Permission is already granted
-                                    imagePickerLauncher.launch("image/*")
+                                    val cropOptions = CropImageContractOptions(null, CropImageOptions())
+                                    imageCropLauncher.launch(cropOptions)
                                 }
                                 else -> {
-                                    // Permission not granted, request it
                                     permissionLauncher.launch(permissionToRequest)
                                 }
                             }

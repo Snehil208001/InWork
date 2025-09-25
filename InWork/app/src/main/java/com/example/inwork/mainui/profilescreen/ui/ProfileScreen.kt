@@ -1,8 +1,7 @@
 package com.example.inwork.mainui.profilescreen.ui
 
-import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,9 +21,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +31,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
 import com.example.inwork.R
 import com.example.inwork.mainui.profilescreen.viewmodel.ProfileViewModel
 import com.example.inwork.ui.theme.CameraFabColor
@@ -50,15 +52,20 @@ fun ProfileScreen(
     val name by profileViewModel.name
     val email by profileViewModel.email
     val companyId by profileViewModel.companyId
-    // Assuming 'department' can be used as 'Industry'
     val department by profileViewModel.department
     val designation by profileViewModel.designation
     val phone by profileViewModel.phone
+    val context = LocalContext.current
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        profileViewModel.onProfileImageChange(uri)
+    val imageCropLauncher = rememberLauncherForActivityResult(
+        contract = CropImageContract()
+    ) { result ->
+        if (result.isSuccessful) {
+            profileViewModel.onProfileImageChange(result.uriContent)
+        } else {
+            val exception = result.error
+            Toast.makeText(context, "Image Cropping failed: ${exception?.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     Column(
@@ -96,11 +103,17 @@ fun ProfileScreen(
                         modifier = Modifier
                             .size(120.dp)
                             .clip(CircleShape)
-                            .clickable { imagePickerLauncher.launch("image/*") },
+                            .clickable {
+                                val cropOptions = CropImageContractOptions(null, CropImageOptions())
+                                imageCropLauncher.launch(cropOptions)
+                            },
                         contentScale = ContentScale.Crop
                     )
                     FloatingActionButton(
-                        onClick = { imagePickerLauncher.launch("image/*") },
+                        onClick = {
+                            val cropOptions = CropImageContractOptions(null, CropImageOptions())
+                            imageCropLauncher.launch(cropOptions)
+                        },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .size(40.dp),
