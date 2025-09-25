@@ -275,8 +275,7 @@ fun AdminHomeScreen(
                                 }
                             }
                             is AdminScreen.AllMenu -> {
-                                // Assuming AllMenuContent exists and is correctly defined
-                                // AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
+                                AllMenuContent(modifier = Modifier.fillMaxSize(), navController = navController)
                             }
                             is AdminScreen.SentNotice -> {
                                 Column(modifier = Modifier

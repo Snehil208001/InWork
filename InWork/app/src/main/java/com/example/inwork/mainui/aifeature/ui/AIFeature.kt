@@ -9,15 +9,18 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.inwork.mainui.aifeature.viewmodel.ChatMessage
@@ -29,20 +32,17 @@ import kotlin.math.roundToInt
 @Composable
 fun DraggableAIFab(geminiViewModel: GeminiViewModel) {
     var showBottomSheet by remember { mutableStateOf(false) }
-    // Re-added state for tracking the FAB's offset
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
-    // Outer Box positions the FAB in the bottom-right corner initially.
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.BottomEnd
     ) {
-        // This inner Box now handles the dragging logic again.
         Box(
             modifier = Modifier
                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                .padding(16.dp) // Padding is applied here to keep the FAB from the edges
+                .padding(16.dp)
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
@@ -62,7 +62,6 @@ fun DraggableAIFab(geminiViewModel: GeminiViewModel) {
         }
     }
 
-
     if (showBottomSheet) {
         val sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true
@@ -71,7 +70,6 @@ fun DraggableAIFab(geminiViewModel: GeminiViewModel) {
         ModalBottomSheet(
             onDismissRequest = {
                 showBottomSheet = false
-                geminiViewModel.clearConversation()
             },
             sheetState = sheetState,
         ) {
@@ -80,12 +78,14 @@ fun DraggableAIFab(geminiViewModel: GeminiViewModel) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AIPromptUI(geminiViewModel: GeminiViewModel) {
     val chatHistory by geminiViewModel.chatHistory.collectAsState()
     var userPrompt by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(chatHistory) {
         coroutineScope.launch {
@@ -102,13 +102,22 @@ fun AIPromptUI(geminiViewModel: GeminiViewModel) {
             .padding(horizontal = 16.dp)
             .imePadding()
     ) {
-        Text(
-            "Ask Me Anything",
-            style = MaterialTheme.typography.headlineSmall,
+        Row(
             modifier = Modifier
-                .padding(vertical = 16.dp)
-                .align(Alignment.CenterHorizontally)
-        )
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "Ask Me Anything",
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            IconButton(onClick = { geminiViewModel.clearConversation() }) {
+                Icon(Icons.Default.Add, contentDescription = "New Chat")
+            }
+        }
+
 
         LazyColumn(
             state = listState,
@@ -138,6 +147,7 @@ fun AIPromptUI(geminiViewModel: GeminiViewModel) {
                     if (userPrompt.isNotBlank()) {
                         geminiViewModel.generateContent(userPrompt)
                         userPrompt = ""
+                        keyboardController?.hide()
                     }
                 },
                 modifier = Modifier
