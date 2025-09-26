@@ -56,6 +56,13 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
+// --- NEW IMPORTS ---
+import android.location.Geocoder
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+// -------------------
+
 
 sealed class UserScreen(val title: String) {
     object Home : UserScreen("Home")
@@ -66,8 +73,54 @@ sealed class UserScreen(val title: String) {
     object CheckEvent : UserScreen("Check Event")
     object ContactUs : UserScreen("Contact Us")
     object Profile : UserScreen("Profile")
-    object ImageUpload : UserScreen("Upload Photo") // Corrected Line
+    object ImageUpload : UserScreen("Upload Photo")
 }
+
+// --- NEW UTILITY FUNCTION TO RESOLVE ADDRESS (GEOCODING) ---
+private fun resolveAddress(context: Context, location: Location, onAddressResolved: (String) -> Unit) {
+    val geocoder = Geocoder(context, Locale.getDefault())
+    try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Asynchronous Geocoding for API 33+
+            geocoder.getFromLocation(location.latitude, location.longitude, 1) { list ->
+                val address = list.firstOrNull()?.getAddressLine(0) ?: "Address not found"
+                onAddressResolved(address)
+            }
+        } else {
+            // Synchronous Geocoding for older APIs (Must be run off the main thread/coroutine scope)
+            @Suppress("DEPRECATION")
+            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            val address = addresses?.firstOrNull()?.getAddressLine(0) ?: "Address not found"
+            onAddressResolved(address)
+        }
+    } catch (e: Exception) {
+        onAddressResolved("Address lookup failed: ${e.message ?: "Unknown error"}")
+    }
+}
+// --- END NEW UTILITY FUNCTION ---
+
+
+// --- MODIFIED UTILITY FUNCTION FOR LAST KNOWN LOCATION ---
+private fun getLastKnownLocation(context: Context, onLocationFetched: (Location?) -> Unit) {
+    if (ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                onLocationFetched(location)
+            }
+            .addOnFailureListener {
+                onLocationFetched(null)
+            }
+    } else {
+        onLocationFetched(null)
+    }
+}
+// --- END MODIFIED UTILITY FUNCTION ---
+
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
@@ -122,15 +175,39 @@ fun UserHomeScreen(
         )
     }
 
-    BackHandler(enabled = drawerState.isOpen || currentScreen != UserScreen.Home) {
+    // MODIFIED: Use screen stack size for BackHandler
+    BackHandler(enabled = drawerState.isOpen || state.screenStack.size > 1) {
         if (drawerState.isOpen) {
             scope.launch {
                 drawerState.close()
             }
         } else {
-            viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Home))
+            viewModel.onEvent(UserHomeEvent.NavigateBack)
         }
     }
+
+    // --- NEW/MODIFIED: Location Fetching and Geocoding Logic ---
+    LaunchedEffect(state.hasLocationPermission, state.currentScreen, state.currentAddress) {
+        // Only fetch/refresh if we are on the Home screen and have permission
+        if (state.hasLocationPermission && state.currentScreen == UserScreen.Home) {
+            // Trigger fetch if location hasn't been set (null) or if a Refresh was requested (address is "Updating...")
+            if (state.currentLatitude == null || state.currentAddress == "Updating...") {
+                // Run location fetching/geocoding in a background context (Dispatchers.IO)
+                withContext(Dispatchers.IO) {
+                    getLastKnownLocation(context) { location ->
+                        location?.let { loc ->
+                            viewModel.onEvent(UserHomeEvent.LocationFetched(loc))
+                            resolveAddress(context, loc) { address ->
+                                viewModel.onEvent(UserHomeEvent.AddressResolved(address))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // --- END NEW/MODIFIED LOGIC ---
+
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -208,7 +285,7 @@ fun UserHomeScreen(
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.Profile))
                         scope.launch { drawerState.close() }
                     },
-                    onUploadPhotoClick = { // Corrected Block
+                    onUploadPhotoClick = {
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.ImageUpload))
                         scope.launch { drawerState.close() }
                     }
@@ -273,9 +350,19 @@ fun UserHomeScreen(
 
                 when (currentScreen) {
                     is UserScreen.Home -> {
-                        Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-                            Text(text = "User Home Screen Content")
-                        }
+                        // --- MODIFIED: Pass dynamic location data and Refresh click handler ---
+                        EmployeeHomeScreen(
+                            currentLatitude = state.currentLatitude,
+                            currentLongitude = state.currentLongitude,
+                            currentAddress = state.currentAddress,
+                            onShowOnMapClick = {
+                                viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.AddGeo))
+                            },
+                            onRefreshClick = {
+                                viewModel.onEvent(UserHomeEvent.RefreshLocation)
+                            }
+                        )
+                        // --- END MODIFIED ---
                     }
                     is UserScreen.AddGeo -> {
                         AddGeoScreen(
@@ -311,7 +398,7 @@ fun UserHomeScreen(
                     is UserScreen.Profile -> {
                         ProfileScreen(navController = navController)
                     }
-                    is UserScreen.ImageUpload -> { // Corrected Block
+                    is UserScreen.ImageUpload -> {
                         ImageUploadScreen(navController = navController)
                     }
                 }
@@ -372,22 +459,7 @@ fun AddGeoScreen(
     }
 }
 
-private fun getLastKnownLocation(context: Context, onLocationFetched: (Location?) -> Unit) {
-    if (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    ) {
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location: Location? ->
-                onLocationFetched(location)
-            }
-            .addOnFailureListener {
-                onLocationFetched(null)
-            }
-    }
-}
+// The getLastKnownLocation utility function is defined above the UserHomeScreen composable.
 
 @Composable
 fun SosDialog(

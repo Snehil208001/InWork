@@ -3,6 +3,7 @@ package com.example.inwork.mainui.userhomescreen.viewmodel
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location // <--- NEW IMPORT
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -16,7 +17,12 @@ import kotlinx.coroutines.flow.update
 data class UserHomeState(
     // The navigation history. The last item is the current screen.
     val screenStack: List<UserScreen> = listOf(UserScreen.Home),
-    val hasLocationPermission: Boolean = false
+    val hasLocationPermission: Boolean = false,
+    // --- NEW LOCATION FIELDS ---
+    val currentLatitude: Double? = null,
+    val currentLongitude: Double? = null,
+    val currentAddress: String = "Fetching location...",
+    // ---------------------------
 ) {
     // Helper to easily get the current screen
     val currentScreen: UserScreen
@@ -27,8 +33,13 @@ sealed class UserHomeEvent {
     data class ScreenSelected(val screen: UserScreen) : UserHomeEvent()
     data class LocationPermissionUpdated(val isGranted: Boolean) : UserHomeEvent()
     data class CheckLocationPermission(val context: Context) : UserHomeEvent()
-    object NavigateBack : UserHomeEvent() // Event for back navigation
-    // Add other events here, e.g., object SosButtonClicked
+    object NavigateBack : UserHomeEvent()
+
+    // --- NEW LOCATION EVENTS ---
+    data class LocationFetched(val location: Location) : UserHomeEvent()
+    data class AddressResolved(val address: String) : UserHomeEvent()
+    object RefreshLocation : UserHomeEvent()
+    // ---------------------------
 }
 
 class UserHomeViewModel : ViewModel() {
@@ -66,6 +77,23 @@ class UserHomeViewModel : ViewModel() {
                 ) == PackageManager.PERMISSION_GRANTED
                 _state.update { it.copy(hasLocationPermission = isGranted) }
             }
+            // --- NEW LOCATION EVENT HANDLERS ---
+            is UserHomeEvent.LocationFetched -> {
+                _state.update {
+                    it.copy(
+                        currentLatitude = event.location.latitude,
+                        currentLongitude = event.location.longitude
+                    )
+                }
+            }
+            is UserHomeEvent.AddressResolved -> {
+                _state.update { it.copy(currentAddress = event.address) }
+            }
+            UserHomeEvent.RefreshLocation -> {
+                // Reset location state to trigger the location fetching logic in the UI
+                _state.update { it.copy(currentAddress = "Updating...", currentLatitude = null, currentLongitude = null) }
+            }
+            // -----------------------------------
         }
     }
 }
