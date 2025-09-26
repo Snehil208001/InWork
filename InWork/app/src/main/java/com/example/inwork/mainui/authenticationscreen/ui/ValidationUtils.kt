@@ -35,7 +35,7 @@ fun isValidProfessionalEmail(email: String): Pair<Boolean, String?> {
     )
     val domain = email.substringAfter('@', "")
     if (domain.isBlank() || domain !in allowedDomains) {
-        return Pair(false, "Only major email providers are allowed (e.g., Google, Yahoo).")
+        return Pair(false, "Enter Valid Email.")
     }
     return Pair(true, null)
 }

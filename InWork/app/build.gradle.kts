@@ -36,7 +36,6 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "apiKey", "\"${getApiKey()}\"")
     }
 
     buildTypes {
@@ -62,8 +61,7 @@ android {
 }
 
 dependencies {
-    // Correctly referencing the Gemini SDK from libs.versions.toml
-    implementation(libs.google.generativeai)
+
 
     // Standard Android & Compose dependencies (consolidated)
     implementation(libs.androidx.core.ktx)

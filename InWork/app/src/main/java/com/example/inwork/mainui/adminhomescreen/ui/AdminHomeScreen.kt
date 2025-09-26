@@ -57,8 +57,6 @@ import com.example.inwork.mainui.admineventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
 import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
-import com.example.inwork.mainui.aifeature.ui.DraggableAIFab
-import com.example.inwork.mainui.aifeature.viewmodel.GeminiViewModel
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
@@ -87,7 +85,6 @@ sealed class AdminScreen(val title: String) {
 fun AdminHomeScreen(
     navController: NavController,
     viewModel: AdminHomeViewModel = hiltViewModel(),
-    geminiViewModel: GeminiViewModel = hiltViewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -331,8 +328,6 @@ fun AdminHomeScreen(
                     }
                 }
             }
-            // ✅ DraggableAIFab is now a sibling to the Scaffold, so it will be drawn on top.
-            DraggableAIFab(geminiViewModel = geminiViewModel)
         }
     }
 }
