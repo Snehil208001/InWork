@@ -1,6 +1,6 @@
 package com.example.inwork.mainui.authenticationscreen.viewodel
 
-
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.inwork.mainui.authenticationscreen.ui.SignUpUiState
@@ -9,10 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// Placeholder functions (Assume these are imported from ValidationUtils.kt)
-// You MUST replace these with your actual validation logic.
-fun isValidProfessionalEmail(email: String): Pair<Boolean, String?> = Pair(true, null)
-fun isValidMobileNumber(mobile: String): Boolean = mobile.length == 10 // Basic placeholder check
+// Placeholder function - replace with your actual validation logic if needed.
+fun isValidMobileNumber(mobile: String): Boolean = mobile.length == 10 && mobile.all { it.isDigit() }
 
 class SignUpViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(SignUpUiState())
@@ -28,16 +26,62 @@ class SignUpViewModel : ViewModel() {
 
     fun onAddAdminClick() {
         val currentState = _uiState.value
-        // Note: Replace the placeholder validation functions with your actual imported ones.
-        val emailValidation = isValidProfessionalEmail(currentState.email)
 
-        val companyIdError = if (currentState.companyId.isBlank()) "Company ID cannot be empty" else null
-        val companyNameError = if (currentState.companyName.isBlank()) "Company Name cannot be empty" else null
-        val industryError = if (currentState.industry.isBlank()) "Industry cannot be empty" else null
-        val directorError = if (currentState.managingDirector.isBlank()) "Director name cannot be empty" else null
-        val cityError = if (currentState.city.isBlank()) "City cannot be empty" else null
-        val mobileError = if (currentState.mobile.isBlank()) "Mobile cannot be empty" else if (!isValidMobileNumber(currentState.mobile)) "Enter a valid 10-digit mobile number" else null
-        val emailError = if (currentState.email.isBlank()) "Email cannot be empty" else emailValidation.second
+        val companyIdError = if (currentState.companyId.isBlank()) {
+            "Company ID cannot be empty"
+        } else if (!currentState.companyId.all { it.isLetterOrDigit() }) {
+            "Company ID can only contain letters and numbers"
+        } else {
+            null
+        }
+
+        val companyNameError = if (currentState.companyName.isBlank()) {
+            "Company Name cannot be empty"
+        } else if (!currentState.companyName.all { it.isLetter() || it.isWhitespace() }) {
+            "Company Name can only contain letters"
+        } else {
+            null
+        }
+
+        val industryError = if (currentState.industry.isBlank()) {
+            "Industry cannot be empty"
+        } else if (!currentState.industry.all { it.isLetter() || it.isWhitespace() }) {
+            "Industry can only contain letters"
+        } else {
+            null
+        }
+
+        val directorError = if (currentState.managingDirector.isBlank()) {
+            "Director name cannot be empty"
+        } else if (!currentState.managingDirector.all { it.isLetter() || it.isWhitespace() }) {
+            "Director name can only contain letters"
+        } else {
+            null
+        }
+
+        val cityError = if (currentState.city.isBlank()) {
+            "City cannot be empty"
+        } else if (!currentState.city.all { it.isLetter() || it.isWhitespace() }) {
+            "City can only contain letters"
+        } else {
+            null
+        }
+
+        val mobileError = if (currentState.mobile.isBlank()) {
+            "Mobile cannot be empty"
+        } else if (!isValidMobileNumber(currentState.mobile)) {
+            "Enter a valid 10-digit mobile number"
+        } else {
+            null
+        }
+
+        val emailError = if (currentState.email.isBlank()) {
+            "Email cannot be empty"
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(currentState.email).matches()) {
+            "Enter a valid email address"
+        } else {
+            null
+        }
 
         val hasError = listOfNotNull(
             companyIdError, companyNameError, industryError, directorError, cityError, mobileError, emailError
