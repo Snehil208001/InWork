@@ -30,7 +30,7 @@ import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AllMenuContent
 import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
-import com.example.inwork.mainui.authenticationscreen.ui.SignUpScreen
+import com.example.inwork.mainui.authenticationscreen.ui.SignupScreen
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.imageuploadscreen.ui.ImageUploadScreen
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
@@ -57,7 +57,7 @@ fun MyAppNav(
         composable(Screen.Splash.route) { SplashScreen(navController = navController) }
         composable(Screen.Permission.route) { PermissionScreen(navController = navController) }
         composable(Screen.Login.route) { LoginScreen(navController = navController) }
-        composable(Screen.Signup.route) { SignUpScreen(navController = navController) }
+        composable(Screen.Signup.route) { SignupScreen(navController = navController) }
         composable(Screen.adminHome.route) { AdminHomeScreen(navController = navController) }
         composable(Screen.userHome.route) { UserHomeScreen(navController = navController) }
         composable(Screen.AllMenu.route) { AllMenuContent(navController = navController) }
