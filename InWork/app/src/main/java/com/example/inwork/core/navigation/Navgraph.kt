@@ -37,7 +37,6 @@ import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.permissionscreen.ui.GrantPermissionsScreen
 import com.example.inwork.mainui.permissionscreen.ui.PermissionScreen
 import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
-import com.example.inwork.mainui.splashscreen.ui.OnboardingScreen
 import com.example.inwork.mainui.splashscreen.ui.SplashScreen
 import com.example.inwork.mainui.userhomescreen.ui.UserHomeScreen
 
@@ -56,7 +55,6 @@ fun MyAppNav(
     ) {
         // Core App Flow
         composable(Screen.Splash.route) { SplashScreen(navController = navController) }
-        composable(Screen.Onboarding.route) { OnboardingScreen(navController = navController) }
         composable(Screen.Permission.route) { PermissionScreen(navController = navController) }
         composable(Screen.Login.route) { LoginScreen(navController = navController) }
         composable(Screen.Signup.route) { SignUpScreen(navController = navController) }

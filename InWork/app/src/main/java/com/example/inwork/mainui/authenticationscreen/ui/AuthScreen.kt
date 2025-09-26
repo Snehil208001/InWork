@@ -1,6 +1,5 @@
 package com.example.inwork.mainui.authenticationscreen.ui
 
-import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,6 +35,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.inwork.R
 import com.example.inwork.core.navigation.Screen
+import android.Manifest
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 
 // A simple enum to represent the possible roles
 enum class LoginRole {
@@ -50,22 +62,19 @@ fun LoginScreen(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var showForgotPasswordDialog by remember { mutableStateOf(false) }
     val passwordFocusRequester = remember { FocusRequester() }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
-    // --- Notification Permission Logic ---
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            // You can handle the result here if needed (e.g., show a message)
-        }
+        onResult = { isGranted -> }
     )
 
-    // Request notification permission when the screen is first composed
     LaunchedEffect(key1 = true) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
-    // --- End of Notification Permission Logic ---
 
     if (showForgotPasswordDialog) {
         ForgotPasswordDialog(
@@ -83,9 +92,9 @@ fun LoginScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding) // Apply padding from Scaffold for system bars
+                .padding(innerPadding)
                 .padding(horizontal = 16.dp)
-                .imePadding() // Automatically adds padding when the keyboard is open
+                .imePadding()
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceAround
@@ -127,18 +136,26 @@ fun LoginScreen(navController: NavController) {
                 ) {
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            emailError = null
+                        },
                         label = { Text("Email Address") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() })
+                        keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() }),
+                        isError = emailError != null,
+                        supportingText = { emailError?.let { Text(it) } }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            passwordError = null
+                        },
                         label = { Text("Password") },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -154,9 +171,8 @@ fun LoginScreen(navController: NavController) {
                             }
                         },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            // Handle login on keyboard done action
-                        })
+                        isError = passwordError != null,
+                        supportingText = { passwordError?.let { Text(it) } }
                     )
                     TextButton(
                         onClick = { showForgotPasswordDialog = true },
@@ -191,13 +207,27 @@ fun LoginScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    if (selectedRole == LoginRole.ADMIN) {
-                        navController.navigate(Screen.adminHome.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
-                        }
+                    val emailValidationResult = isValidProfessionalEmail(email)
+                    emailError = if (email.isBlank()) "Email cannot be empty" else if (!emailValidationResult.first) emailValidationResult.second else null
+
+                    val passwordValidationResult = isValidPassword(password)
+                    passwordError = if (password.isBlank()) {
+                        "Password cannot be empty"
+                    } else if (!passwordValidationResult.first) {
+                        passwordValidationResult.second
                     } else {
-                        navController.navigate(Screen.userHome.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                        null
+                    }
+
+                    if (emailError == null && passwordError == null) {
+                        if (selectedRole == LoginRole.ADMIN) {
+                            navController.navigate(Screen.adminHome.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(Screen.userHome.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
                         }
                     }
                 },
@@ -214,11 +244,9 @@ fun LoginScreen(navController: NavController) {
     }
 }
 
-
 @Composable
 fun ForgotPasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var recoveryEmail by remember { mutableStateOf("") }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "Recover Password") },
@@ -255,9 +283,9 @@ fun ForgotPasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
 
 @Composable
 fun RoleSelector(selectedRole: LoginRole, onRoleSelected: (LoginRole) -> Unit) {
-    val selectedBorderColor = Color(0xFF00C853) // A vibrant green
+    val selectedBorderColor = Color(0xFF00C853)
     val unselectedBorderColor = Color.Gray
-    val selectedBgTint = Color(0x1A00C853) // A very faint green background tint (10% opacity)
+    val selectedBgTint = Color(0x1A00C853)
     val textColor = Color.Black
 
     Row(
@@ -265,7 +293,6 @@ fun RoleSelector(selectedRole: LoginRole, onRoleSelected: (LoginRole) -> Unit) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Admin Button
         OutlinedButton(
             onClick = { onRoleSelected(LoginRole.ADMIN) },
             shape = RoundedCornerShape(50),
@@ -283,10 +310,7 @@ fun RoleSelector(selectedRole: LoginRole, onRoleSelected: (LoginRole) -> Unit) {
         ) {
             Text("Admin")
         }
-
         Spacer(modifier = Modifier.width(16.dp))
-
-        // Employee Button
         OutlinedButton(
             onClick = { onRoleSelected(LoginRole.EMPLOYEE) },
             shape = RoundedCornerShape(50),
