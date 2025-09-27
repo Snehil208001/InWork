@@ -58,6 +58,7 @@ import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
 import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
+import com.example.inwork.mainui.dashboard.DashboardScreen
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
 import com.example.inwork.mainui.notificationscreen.NotificationScreen
 import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
@@ -306,11 +307,7 @@ fun AdminHomeScreen(
                                 }
                             }
                             is AdminScreen.Dashboard -> {
-                                Column(modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.White)) {
-                                    Text(text = "Dashboard Screen Content")
-                                }
+                                DashboardScreen()
                             }
                             is AdminScreen.Notification -> {
                                 NotificationScreen()
