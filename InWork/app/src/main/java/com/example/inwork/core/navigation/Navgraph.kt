@@ -29,6 +29,7 @@ import com.example.inwork.mainui.admineventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AdminHomeScreen
 import com.example.inwork.mainui.adminhomescreen.ui.AllMenuContent
 import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
+import com.example.inwork.mainui.allemployeesscreen.ui.AllEmployeesScreen // ADDED
 import com.example.inwork.mainui.authenticationscreen.ui.LoginScreen
 import com.example.inwork.mainui.authenticationscreen.ui.SignupScreen
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
@@ -65,6 +66,7 @@ fun MyAppNav(
         composable(Screen.GrantPermissionsScreen.route) { GrantPermissionsScreen() }
         composable(Screen.AdminSettingsScreen.route) { AdminSettingsScreen() }
 
+
         // ADDED: Navigation to ImageUploadScreen
         composable(Screen.ImageUpload.route) {
             ImageUploadScreen(navController = navController)
@@ -98,7 +100,9 @@ fun MyAppNav(
         }
         composable(Screen.News.route) { Text(text = "News Screen") }
         composable(Screen.Weather.route) { Text(text = "Weather Screen") }
-        composable(Screen.AllEmployees.route) { Text(text = "All Employees Screen") }
+        composable(Screen.AllEmployees.route) {
+            AllEmployeesScreen(navController = navController) // CORRECTED
+        }
         composable(Screen.EmployeeStatus.route) { Text(text = "Employee Status Screen") }
         composable(Screen.LeaveRequest.route) { Text(text = "Leave Request Screen") }
         composable(Screen.MonthlyReports.route) { Text(text = "Monthly Reports Screen") }

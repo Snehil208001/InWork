@@ -57,6 +57,7 @@ import com.example.inwork.mainui.admineventscreen.ui.AddEventScreen
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeEvent
 import com.example.inwork.mainui.adminhomescreen.viewmodel.AdminHomeViewModel
 import com.example.inwork.mainui.adminsettings.ui.AdminSettingsScreen
+import com.example.inwork.mainui.allemployeesscreen.ui.AllEmployeesScreen // ADDED
 import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.dashboard.DashboardScreen
 import com.example.inwork.mainui.noticescreen.ui.SendNoticeScreen
@@ -78,6 +79,7 @@ sealed class AdminScreen(val title: String) {
     object ContactUs : AdminScreen("Contact Us")
     object Settings : AdminScreen("Settings")
     object Profile : AdminScreen("Profile")
+    object AllEmployees : AdminScreen("All Employees") // ADDED
 }
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -148,7 +150,10 @@ fun AdminHomeScreen(
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.Profile))
                         scope.launch { drawerState.close() }
                     },
-                    onAllEmployeesClick = { /* TODO */ },
+                    onAllEmployeesClick = { // CORRECTED
+                        viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.AllEmployees))
+                        scope.launch { drawerState.close() }
+                    },
                     onSentNoticesClick = {
                         viewModel.onEvent(AdminHomeEvent.ScreenSelected(AdminScreen.SentNotice))
                         scope.launch { drawerState.close() }
@@ -196,7 +201,6 @@ fun AdminHomeScreen(
             }
         }
     ) {
-        // ✅ CORRECTED: This Box now wraps both the Scaffold and the DraggableAIFab
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 topBar = {
@@ -320,6 +324,9 @@ fun AdminHomeScreen(
                             }
                             is AdminScreen.Profile -> {
                                 ProfileScreen(navController = navController)
+                            }
+                            is AdminScreen.AllEmployees -> { // ADDED
+                                AllEmployeesScreen(navController = navController)
                             }
                         }
                     }
