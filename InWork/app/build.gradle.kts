@@ -97,6 +97,10 @@ dependencies {
     // Image Cropper
     implementation("com.vanniktech:android-image-cropper:4.5.0")
 
+    //biometric
+    implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
+    implementation("androidx.fragment:fragment-ktx:1.5.7") // Biometric library needs this
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

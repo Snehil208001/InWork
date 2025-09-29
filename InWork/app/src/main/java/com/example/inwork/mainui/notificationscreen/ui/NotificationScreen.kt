@@ -20,38 +20,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.inwork.R
+import com.example.inwork.mainui.notificationscreen.viewmodel.NotificationEvent
+import com.example.inwork.mainui.notificationscreen.viewmodel.NotificationViewModel
 
 @Composable
-fun NotificationScreen() {
+fun NotificationScreen(
+    viewModel: NotificationViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
-    var hasNotificationPermission by remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            mutableStateOf(
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-            )
-        } else {
-            mutableStateOf(true)
-        }
-    }
+    val state by viewModel.state.collectAsState()
 
+    // Launcher for the notification permission request
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
-            hasNotificationPermission = isGranted
+            viewModel.onEvent(NotificationEvent.OnPermissionResult(isGranted))
         }
     )
 
+    // Check for permission when the screen is first composed or resumed
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (!hasNotificationPermission) {
-                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
+        viewModel.onEvent(NotificationEvent.CheckInitialPermission(context))
     }
 
     Column(
@@ -61,7 +52,8 @@ fun NotificationScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (hasNotificationPermission) {
+        if (state.hasNotificationPermission) {
+            // UI when permission is granted
             Text(text = "Notifications are enabled.")
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { showDummySystemNotification(context) }) {
@@ -70,7 +62,17 @@ fun NotificationScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             DummyNotificationCard()
         } else {
-            Text(text = "Notifications are disabled. Please enable them in settings.")
+            // UI when permission is denied
+            Text(text = "Notifications are disabled.")
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }) {
+                Text("Request Permission")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = { openAppSettings(context) }) {
                 Text("Open Settings")
             }
@@ -78,20 +80,16 @@ fun NotificationScreen() {
     }
 }
 
-// ✨ CORRECTED FUNCTION ✨
 fun showDummySystemNotification(context: Context) {
     val notificationManager = NotificationManagerCompat.from(context)
 
-    // On older versions, we don't need to check for permission.
     val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
     } else {
         true
     }
 
     if (!hasPermission) {
-        // If permission is missing on Android 13+, do nothing.
-        // The UI should guide the user to grant it.
         return
     }
 
@@ -101,7 +99,6 @@ fun showDummySystemNotification(context: Context) {
         .setContentText("This is a real system notification.")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-    // Show the notification
     notificationManager.notify(1, builder.build())
 }
 

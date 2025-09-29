@@ -15,13 +15,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import com.example.inwork.ui.theme.LightGreen
+import com.example.inwork.core.utils.BiometricAuthenticator
 
 @Composable
 fun EmployeeHomeScreen(
@@ -32,28 +33,29 @@ fun EmployeeHomeScreen(
     onRefreshClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    var showCheckInDialog by remember { mutableStateOf(false) }
+    var showCheckOutDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val biometricAuthenticator = remember { BiometricAuthenticator(context) }
 
     val latitudeText = currentLatitude?.let { String.format("%.7f", it) } ?: "N/A"
     val longitudeText = currentLongitude?.let { String.format("%.7f", it) } ?: "N/A"
     val locationDisplay = "Latitude: $latitudeText Longitude: $longitudeText"
 
-    // --- The scrollable Column ---
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight() // Explicitly take up max height of the parent
+            .fillMaxHeight()
             .background(Color.White)
             .padding(16.dp)
-            .verticalScroll(rememberScrollState()), // Enables scrolling
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- Location Card (Color Changed to White) ---
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 0.dp),
             shape = RoundedCornerShape(12.dp),
-            // FIX: Changed containerColor to Color.White
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
@@ -81,7 +83,6 @@ fun EmployeeHomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Update Location Section, wired to onRefreshClick
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable { onRefreshClick() }
@@ -96,7 +97,6 @@ fun EmployeeHomeScreen(
                         Text("Update Location", fontSize = 14.sp, color = Color.Black)
                     }
 
-                    // ADD GEOFENCE Button and "office location" label
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
@@ -145,7 +145,6 @@ fun EmployeeHomeScreen(
                 .padding(vertical = 8.dp)
         )
 
-        // --- App Usage Details Card (EXPAND/COLLAPSE) ---
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -188,15 +187,13 @@ fun EmployeeHomeScreen(
                 )
             }
         }
-        // --- End App Usage Details Card ---
 
-        // --- Check In/Out Buttons ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Button(
-                onClick = { /* onManualCheckIn() */ },
+                onClick = { showCheckInDialog = true },
                 modifier = Modifier
                     .weight(1f)
                     .height(50.dp),
@@ -206,7 +203,7 @@ fun EmployeeHomeScreen(
                 Text("MANUAL CHECK IN", color = Color.White, fontWeight = FontWeight.Bold)
             }
             Button(
-                onClick = { /* onManualCheckOut() */ },
+                onClick = { showCheckOutDialog = true },
                 modifier = Modifier
                     .weight(1f)
                     .height(50.dp),
@@ -217,9 +214,31 @@ fun EmployeeHomeScreen(
             }
         }
     }
-}
 
-// --- App Usage Detail Composables ---
+    if (showCheckInDialog) {
+        CheckInDialog(
+            onDismiss = { showCheckInDialog = false },
+            onConfirm = {
+                showCheckInDialog = false
+                biometricAuthenticator.authenticate {
+                    // Handle successful check-in
+                }
+            }
+        )
+    }
+
+    if (showCheckOutDialog) {
+        CheckOutDialog(
+            onDismiss = { showCheckOutDialog = false },
+            onConfirm = {
+                showCheckOutDialog = false
+                biometricAuthenticator.authenticate {
+                    // Handle successful check-out
+                }
+            }
+        )
+    }
+}
 
 @Composable
 fun AppUsageDetailsContent() {
@@ -275,6 +294,50 @@ fun UsageDetailRow(app: String, duration: String) {
         Text(text = app, fontSize = 16.sp, color = Color.Black)
         Text(text = duration, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
     }
+}
+
+@Composable
+fun CheckInDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("CheckIn") },
+        text = { Text("Do you want to manually check in?") },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("YES")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("NO")
+            }
+        }
+    )
+}
+
+@Composable
+fun CheckOutDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("CheckOut") },
+        text = { Text("Do you want to manually check out?") },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("YES")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("NO")
+            }
+        }
+    )
 }
 
 @Preview(showSystemUi = true)
