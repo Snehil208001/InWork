@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.speech.RecognizerIntent
@@ -28,12 +29,16 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+// ✨ Added Imports
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.inwork.R // ✨ Added Import
 import com.example.inwork.core.navigation.Screen
 import com.example.inwork.core.utils.components.LocationPermissionBanner
 import com.example.inwork.core.utils.navigationbar.InWorkTopAppBar
@@ -43,7 +48,7 @@ import com.example.inwork.mainui.contactusscreen.ui.ContactUsContent
 import com.example.inwork.mainui.eventscreen.ui.CheckEventScreen
 import com.example.inwork.mainui.imageuploadscreen.ui.ImageUploadScreen
 import com.example.inwork.mainui.leavescreen.ui.PostLeaveScreen
-import com.example.inwork.mainui.notificationscreen.NotificationScreen
+import com.example.inwork.mainui.notificationscreen.ui.NotificationScreen
 import com.example.inwork.mainui.profilescreen.ui.ProfileScreen
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeEvent
 import com.example.inwork.mainui.userhomescreen.viewmodel.UserHomeViewModel
@@ -54,14 +59,10 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.launch
-
-// --- NEW IMPORTS ---
-import android.location.Geocoder
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-// -------------------
 
 
 sealed class UserScreen(val title: String) {
@@ -76,18 +77,38 @@ sealed class UserScreen(val title: String) {
     object ImageUpload : UserScreen("Upload Photo")
 }
 
-// --- NEW UTILITY FUNCTION TO RESOLVE ADDRESS (GEOCODING) ---
+// ✨ NOTIFICATION FUNCTION ADDED HERE ✨
+fun showDummySystemNotification(context: Context) {
+    val notificationManager = NotificationManagerCompat.from(context)
+
+    val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    } else {
+        true
+    }
+
+    if (!hasPermission) {
+        return
+    }
+
+    val builder = NotificationCompat.Builder(context, "DUMMY_CHANNEL_ID")
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setContentTitle("Login Successful")
+        .setContentText("Welcome back, Employee!")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+    notificationManager.notify(1, builder.build())
+}
+
 private fun resolveAddress(context: Context, location: Location, onAddressResolved: (String) -> Unit) {
     val geocoder = Geocoder(context, Locale.getDefault())
     try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Asynchronous Geocoding for API 33+
             geocoder.getFromLocation(location.latitude, location.longitude, 1) { list ->
                 val address = list.firstOrNull()?.getAddressLine(0) ?: "Address not found"
                 onAddressResolved(address)
             }
         } else {
-            // Synchronous Geocoding for older APIs (Must be run off the main thread/coroutine scope)
             @Suppress("DEPRECATION")
             val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
             val address = addresses?.firstOrNull()?.getAddressLine(0) ?: "Address not found"
@@ -97,10 +118,7 @@ private fun resolveAddress(context: Context, location: Location, onAddressResolv
         onAddressResolved("Address lookup failed: ${e.message ?: "Unknown error"}")
     }
 }
-// --- END NEW UTILITY FUNCTION ---
 
-
-// --- MODIFIED UTILITY FUNCTION FOR LAST KNOWN LOCATION ---
 private fun getLastKnownLocation(context: Context, onLocationFetched: (Location?) -> Unit) {
     if (ContextCompat.checkSelfPermission(
             context,
@@ -119,8 +137,6 @@ private fun getLastKnownLocation(context: Context, onLocationFetched: (Location?
         onLocationFetched(null)
     }
 }
-// --- END MODIFIED UTILITY FUNCTION ---
-
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
@@ -128,11 +144,17 @@ fun UserHomeScreen(
     navController: NavController,
     viewModel: UserHomeViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+
+    // ✨ NOTIFICATION IS CALLED HERE ON SCREEN LOAD ✨
+    LaunchedEffect(Unit) {
+        showDummySystemNotification(context)
+    }
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val state by viewModel.state.collectAsState()
     val currentScreen = state.currentScreen
-    val context = LocalContext.current
     var showSosDialog by remember { mutableStateOf(false) }
     var sosText by remember { mutableStateOf("Emergency Situation") }
 
@@ -175,7 +197,6 @@ fun UserHomeScreen(
         )
     }
 
-    // MODIFIED: Use screen stack size for BackHandler
     BackHandler(enabled = drawerState.isOpen || state.screenStack.size > 1) {
         if (drawerState.isOpen) {
             scope.launch {
@@ -186,13 +207,9 @@ fun UserHomeScreen(
         }
     }
 
-    // --- NEW/MODIFIED: Location Fetching and Geocoding Logic ---
     LaunchedEffect(state.hasLocationPermission, state.currentScreen, state.currentAddress) {
-        // Only fetch/refresh if we are on the Home screen and have permission
         if (state.hasLocationPermission && state.currentScreen == UserScreen.Home) {
-            // Trigger fetch if location hasn't been set (null) or if a Refresh was requested (address is "Updating...")
             if (state.currentLatitude == null || state.currentAddress == "Updating...") {
-                // Run location fetching/geocoding in a background context (Dispatchers.IO)
                 withContext(Dispatchers.IO) {
                     getLastKnownLocation(context) { location ->
                         location?.let { loc ->
@@ -206,8 +223,6 @@ fun UserHomeScreen(
             }
         }
     }
-    // --- END NEW/MODIFIED LOGIC ---
-
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -350,7 +365,6 @@ fun UserHomeScreen(
 
                 when (currentScreen) {
                     is UserScreen.Home -> {
-                        // --- MODIFIED: Pass dynamic location data and Refresh click handler ---
                         EmployeeHomeScreen(
                             currentLatitude = state.currentLatitude,
                             currentLongitude = state.currentLongitude,
@@ -362,7 +376,6 @@ fun UserHomeScreen(
                                 viewModel.onEvent(UserHomeEvent.RefreshLocation)
                             }
                         )
-                        // --- END MODIFIED ---
                     }
                     is UserScreen.AddGeo -> {
                         AddGeoScreen(
@@ -458,8 +471,6 @@ fun AddGeoScreen(
         }
     }
 }
-
-// The getLastKnownLocation utility function is defined above the UserHomeScreen composable.
 
 @Composable
 fun SosDialog(
