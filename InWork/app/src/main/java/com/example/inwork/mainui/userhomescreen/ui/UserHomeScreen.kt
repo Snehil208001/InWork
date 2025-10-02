@@ -63,6 +63,9 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+// NEW IMPORTS FOR DIALOG
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextField
 
 
 sealed class UserScreen(val title: String) {
@@ -157,6 +160,9 @@ fun UserHomeScreen(
     val currentScreen = state.currentScreen
     var showSosDialog by remember { mutableStateOf(false) }
     var sosText by remember { mutableStateOf("Emergency Situation") }
+
+    // ADDED: State for Delete Account Dialog
+    var showDeleteAccountDialog by remember { mutableStateOf(false) } // ADDED
 
     val speechRecognizerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -303,6 +309,11 @@ fun UserHomeScreen(
                     onUploadPhotoClick = {
                         viewModel.onEvent(UserHomeEvent.ScreenSelected(UserScreen.ImageUpload))
                         scope.launch { drawerState.close() }
+                    },
+                    // ADDED: Delete Account Click Handler
+                    onDeleteAccountClick = { // ADDED
+                        showDeleteAccountDialog = true
+                        scope.launch { drawerState.close() }
                     }
                 )
             }
@@ -417,6 +428,22 @@ fun UserHomeScreen(
                 }
             }
         }
+
+        // ADDED: Delete Account Dialog Check
+        if (showDeleteAccountDialog) { // ADDED
+            DeleteAccountDialog(
+                onDismiss = { showDeleteAccountDialog = false },
+                onSend = { reason ->
+                    println("Account deletion requested. Reason: $reason")
+                    // TODO: Implement actual delete account logic
+                    showDeleteAccountDialog = false
+                    // Navigating to login after mock delete
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.userHome.route) { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -517,6 +544,51 @@ fun SosDialog(
                 Text("CANCEL")
             }
         }
+    )
+}
+
+// ADDED: Delete Account Dialog
+@Composable
+fun DeleteAccountDialog(
+    onDismiss: () -> Unit,
+    onSend: (String) -> Unit
+) {
+    var reasonText by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Why do you want to delete your account?", fontWeight = FontWeight.Bold) },
+        text = {
+            OutlinedTextField(
+                value = reasonText,
+                onValueChange = { reasonText = it },
+                label = { Text("Write here...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                shape = RoundedCornerShape(8.dp),
+                maxLines = 5,
+                singleLine = false
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSend(reasonText) },
+                enabled = reasonText.isNotBlank(), // Enable only if text is present
+                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF4CAF50))
+            ) {
+                Text("SEND")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)
+            ) {
+                Text("CANCEL")
+            }
+        },
+        shape = RoundedCornerShape(16.dp)
     )
 }
 

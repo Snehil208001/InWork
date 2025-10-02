@@ -35,7 +35,9 @@ fun UserSideBar(
     onContactUsClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onUploadPhotoClick: () -> Unit // ADDED: New parameter for photo upload click
+    onUploadPhotoClick: () -> Unit,
+    // ADDED: New parameter for delete account click
+    onDeleteAccountClick: () -> Unit // ADDED
 ) {
     Column(
         modifier = Modifier
@@ -109,7 +111,12 @@ fun UserSideBar(
                 NavigationMenuItem(icon = Icons.Default.Call, text = "Contact Us", onClick = onContactUsClick)
                 NavigationMenuItem(icon = Icons.Default.Settings, text = "Settings", onClick = onSettingsClick)
                 NavigationMenuItem(icon = Icons.Default.ExitToApp, text = "Logout", onClick = onLogoutClick)
-                NavigationMenuItem(icon = Icons.Default.DeleteForever, text = "Delete Account")
+                // MODIFIED: Added onClick for delete account
+                NavigationMenuItem(
+                    icon = Icons.Default.DeleteForever,
+                    text = "Delete Account",
+                    onClick = onDeleteAccountClick // ADDED
+                )
             }
         }
     }
@@ -161,6 +168,7 @@ fun UserSideBarPreview() {
         onContactUsClick = {},
         onLogoutClick = {},
         onProfileClick = {},
-        onUploadPhotoClick = {} // Added placeholder lambda for the preview
+        onUploadPhotoClick = {}, // Added placeholder lambda for the preview
+        onDeleteAccountClick = {} // ADDED
     )
 }

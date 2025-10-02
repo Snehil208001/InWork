@@ -3,7 +3,7 @@ package com.example.inwork.mainui.userhomescreen.viewmodel
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.Location // <--- NEW IMPORT
+import android.location.Location
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -51,10 +51,15 @@ class UserHomeViewModel : ViewModel() {
     fun onEvent(event: UserHomeEvent) {
         when (event) {
             is UserHomeEvent.ScreenSelected -> {
-                // When selecting from the bottom bar, it's a primary navigation action,
-                // so we reset the stack to that screen.
-                if (_state.value.currentScreen != event.screen) {
-                    _state.update { it.copy(screenStack = listOf(event.screen)) }
+                if (event.screen == UserScreen.Home) {
+                    // If the user selects the Home screen, reset the stack
+                    _state.update { it.copy(screenStack = listOf(UserScreen.Home)) }
+                } else if (_state.value.currentScreen != event.screen) {
+                    // Otherwise, add the new screen to the stack
+                    _state.update {
+                        val newStack = it.screenStack.toMutableList().apply { add(event.screen) }
+                        it.copy(screenStack = newStack)
+                    }
                 }
             }
             is UserHomeEvent.NavigateBack -> {
